@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>BenoApp - Nutrición Inteligente</title>
+
+<meta name="theme-color" content="#10b981">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    :root { 
+        --primary: #10b981; 
+        --secondary: #3b82f6;
+        --dark: #0f172a; 
+        --card: #1e293b; 
+        --text: #f1f5f9; 
+        --accent: #f59e0b;
+    }
+    
+    body {
+        font-family: 'Inter', system-ui, sans-serif; 
+        background: var(--dark); 
+        color: var(--text); 
+        margin: 0; 
+        padding: 15px; 
+        padding-bottom: 50px;
+    }
+    
+    .container { max-width: 900px; margin: auto; animation: fadeIn 0.4s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    h1, h2, h3 { color: var(--primary); margin-bottom: 10px; }
+    
+    .glass-card {
+        background: var(--card); 
+        padding: 20px; 
+        border-radius: 16px; 
+        border: 1px solid #334155;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Inputs Modernos */
+    input, select, button {
+        padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #334155; 
+        background: #0f172a; color: white; width: 100%; box-sizing: border-box; font-size: 15px;
+    }
+    button { 
+        background: var(--primary); border: none; font-weight: 700; 
+        cursor: pointer; transition: 0.2s; text-transform: uppercase;
+    }
+    button:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    button:active { transform: translateY(1px); }
+    .btn-sec { background: var(--secondary); }
+    .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+
+    /* Dashboard */
+    .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+    .stat { background: #0f172a; padding: 15px; border-radius: 12px; text-align: center; border-bottom: 3px solid var(--primary); }
+    .stat h4 { margin: 0; font-size: 0.75rem; color: #94a3b8; }
+    .stat h2 { margin: 5px 0 0; font-size: 1.5rem; }
+
+    /* Agua */
+    .water-grid { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .glass { 
+        font-size: 24px; cursor: pointer; opacity: 0.3; transition: 0.3s; filter: grayscale(1);
+    }
+    .glass.active { opacity: 1; filter: grayscale(0); transform: scale(1.2); }
+
+    /* Progresos */
+    .progress-bar-container { margin-top: 15px; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px; }
+    .progress-bg { background: #334155; border-radius: 20px; height: 10px; overflow: hidden; }
+    .bar { height: 100%; transition: 0.5s width; }
+    .over-limit { background: #ef4444 !important; box-shadow: 0 0 8px #ef4444; }
+
+    /* Tablas */
+    .scroll-x { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 450px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
+    
+    .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+
+    .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <header style="display:flex; justify-content:space-between; align-items:center;">
+        <h1>🔹 BenoApp <small style="font-size: 0.4em; vertical-align: middle; opacity: 0.6;">v3.0</small></h1>
+        <label style="font-size: 0.8rem; cursor:pointer;">
+            <input type="checkbox" id="soundToggle" checked style="width:auto;"> 🔊 Sonido
+        </label>
+    </header>
+
+    <div class="glass-card" style="display:flex; gap:10px; align-items:center;">
+        <input type="date" id="datePicker" onchange="changeDate()" style="flex:2;">
+        <button onclick="repeatDay()" class="btn-sec" style="flex:1;">📋 Clonar Ayer</button>
+    </div>
+
+    <div class="dashboard">
+        <div class="stat"><h4>Calorías</h4><h2 id="dashKcal">0</h2></div>
+        <div class="stat"><h4>Proteína</h4><h2 id="dashPro">0g</h2></div>
+        <div class="stat"><h4>Carbs</h4><h2 id="dashCar">0g</h2></div>
+        <div class="stat"><h4>Grasas</h4><h2 id="dashFat">0g</h2></div>
+    </div>
+
+    <div class="glass-card">
+        <h3>🎯 Cumplimiento Diario</h3>
+        <div id="progressBars"></div>
+    </div>
+
+    <div class="glass-card" style="text-align:center;">
+        <h3>💧 Hidratación (Vasos 250ml)</h3>
+        <div class="water-grid" id="waterContainer"></div>
+        <p id="waterCount" style="margin-top:10px; color:var(--secondary); font-weight:bold;">0 L / 2.5 L</p>
+    </div>
+
+    <div class="glass-card">
+        <h3>🍎 Registrar Alimento</h3>
+        <input id="searchFood" placeholder="Buscar en base de datos..." oninput="searchDB()">
+        <select id="foodSelect" size="3" onchange="fillFromDB()" style="display:none;"></select>
+        
+        <div style="display:flex; gap:10px;">
+            <input type="number" id="grams" placeholder="Gramos" oninput="applyCustomGrams()">
+            <button onclick="addManualFood()" class="btn-sec" style="width:auto;">➕ Crear Nuevo</button>
+        </div>
+
+        <div style="background:rgba(0,0,0,0.2); padding:15px; border-radius:12px; margin-top:10px;">
+            <div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px;">
+                <select id="mealType"><option>Desayuno</option><option>Almuerzo</option><option>Cena</option><option>Snack</option></select>
+                <input id="foodName" placeholder="Nombre del alimento">
+            </div>
+            <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:8px;">
+                <input type="number" id="calories" placeholder="Kcal">
+                <input type="number" id="protein" placeholder="P">
+                <input type="number" id="carbs" placeholder="C">
+                <input type="number" id="fat" placeholder="G">
+            </div>
+            <button onclick="addFood()" style="margin-top:10px;">Añadir al registro</button>
+        </div>
+    </div>
+
+    <div class="glass-card scroll-x">
+        <h3>📋 Registro de Comidas</h3>
+        <table id="foodTable">
+            <thead><tr><th>Alimento</th><th>Tipo</th><th>Kcal</th><th>Acción</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="charts-grid">
+        <div class="glass-card" style="height:300px;"><canvas id="macroChart"></canvas></div>
+        <div class="glass-card" style="height:300px;"><canvas id="weeklyChart"></canvas></div>
+    </div>
+
+    <div class="glass-card">
+        <details>
+            <summary style="cursor:pointer; font-weight:bold; color:var(--primary);">⚙️ CONFIGURACIÓN Y METAS</summary>
+            <div style="margin-top:20px; border-top:1px solid #334155; padding-top:20px;">
+                <h4>Calculadora de Macros</h4>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <input type="number" id="calcWeight" placeholder="Peso (kg)">
+                    <input type="number" id="calcHeight" placeholder="Altura (cm)">
+                    <input type="number" id="calcAge" placeholder="Edad">
+                    <select id="calcGender"><option value="1.2">Hombre</option><option value="1">Mujer</option></select>
+                </div>
+                <button onclick="calculateMacros()" class="btn-outline">Auto-Calcular Metas</button>
+                
+                <h4 style="margin-top:20px;">Metas Manuales</h4>
+                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:8px;">
+                    <input id="reqCal" type="number" placeholder="Kcal">
+                    <input id="reqPro" type="number" placeholder="P">
+                    <input id="reqCar" type="number" placeholder="C">
+                    <input id="reqFat" type="number" placeholder="G">
+                </div>
+                <button onclick="saveProfile()">Guardar Cambios</button>
+
+                <div style="margin-top:20px; display:flex; gap:10px;">
+                    <button onclick="exportData()" class="btn-sec" style="font-size:0.8rem;">📤 Exportar Backup</button>
+                    <button onclick="document.getElementById('importFile').click()" class="btn-sec" style="font-size:0.8rem;">📥 Importar Backup</button>
+                    <input type="file" id="importFile" class="hidden" onchange="importData(event)">
+                </div>
+            </div>
+        </details>
+    </div>
+</div>
+
+<script>
+// --- CORE DATA ---
+let profile = JSON.parse(localStorage.getItem("benoProfile")) || {calories:2000, protein:150, carbs:250, fat:70};
+let historyData = JSON.parse(localStorage.getItem("benoHistory")) || {};
+let currentDate = new Date().toISOString().slice(0,10);
+let foodDB = JSON.parse(localStorage.getItem("foodDB")) || [
+    {name:"Pechuga de Pollo",cal:165,pro:31,car:0,fat:3.6},
+    {name:"Arroz Blanco",cal:130,pro:2.7,car:28,fat:0.3},
+    {name:"Huevo",cal:155,pro:13,car:1.1,fat:11},
+    {name:"Avena",cal:389,pro:17,car:66,fat:7},
+    {name:"Aguacate",cal:160,pro:2,car:8.5,fat:14.7}
+];
+
+let selectedFood = null;
+let audioCtx = null;
+
+// --- INITIALIZATION ---
+window.onload = () => {
+    document.getElementById("datePicker").value = currentDate;
+    loadProfileInputs();
+    render();
+};
+
+function loadProfileInputs() {
+    document.getElementById("reqCal").value = profile.calories;
+    document.getElementById("reqPro").value = profile.protein;
+    document.getElementById("reqCar").value = profile.carbs;
+    document.getElementById("reqFat").value = profile.fat;
+}
+
+// --- SOUND SYSTEM ---
+function playSound(type) {
+    if(!document.getElementById('soundToggle').checked) return;
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    const now = audioCtx.currentTime;
+
+    if(type==='success'){
+        osc.frequency.setValueAtTime(500, now); osc.frequency.exponentialRampToValueAtTime(1000, now + 0.1);
+        gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.2);
+    } else {
+        osc.frequency.setValueAtTime(200, now); gain.gain.setValueAtTime(0.1, now);
+        gain.gain.linearRampToValueAtTime(0, now + 0.1);
+    }
+    osc.start(); osc.stop(now + 0.2);
+}
+
+// --- LOGIC ---
+function searchDB() {
+    const term = document.getElementById("searchFood").value.toLowerCase();
+    const select = document.getElementById("foodSelect");
+    select.innerHTML = "";
+    if(term.length < 1) return select.style.display="none";
+    
+    const results = foodDB.filter(x => x.name.toLowerCase().includes(term));
+    if(results.length > 0) {
+        select.style.display = "block";
+        results.forEach(x => {
+            let opt = document.createElement("option");
+            opt.text = `${x.name} (${x.cal} kcal/100g)`;
+            opt.value = x.name;
+            select.add(opt);
+        });
+    }
+}
+
+function fillFromDB() {
+    const val = document.getElementById("foodSelect").value;
+    selectedFood = foodDB.find(x => x.name === val);
+    if(selectedFood) {
+        document.getElementById("foodName").value = selectedFood.name;
+        document.getElementById("grams").value = 100;
+        applyCustomGrams();
+        document.getElementById("foodSelect").style.display="none";
+    }
+}
+
+function applyCustomGrams() {
+    if(!selectedFood) return;
+    const r = (parseFloat(document.getElementById("grams").value) || 0) / 100;
+    document.getElementById("calories").value = Math.round(selectedFood.cal * r);
+    document.getElementById("protein").value = (selectedFood.pro * r).toFixed(1);
+    document.getElementById("carbs").value = (selectedFood.car * r).toFixed(1);
+    document.getElementById("fat").value = (selectedFood.fat * r).toFixed(1);
+}
+
+function addFood() {
+    const entry = {
+        name: document.getElementById("foodName").value || "Varios",
+        type: document.getElementById("mealType").value,
+        cal: parseFloat(document.getElementById("calories").value) || 0,
+        pro: parseFloat(document.getElementById("protein").value) || 0,
+        car: parseFloat(document.getElementById("carbs").value) || 0,
+        fat: parseFloat(document.getElementById("fat").value) || 0
+    };
+    initDayIfMissing();
+    historyData[currentDate].foods.push(entry);
+    save();
+    render();
+    playSound('success');
+}
+
+function setWater(count) {
+    initDayIfMissing();
+    historyData[currentDate].water = count;
+    save();
+    render();
+    playSound('success');
+}
+
+function initDayIfMissing() {
+    if(!historyData[currentDate]) historyData[currentDate] = { foods: [], water: 0 };
+    // Migración por si el dato viejo era un array simple
+    if(Array.isArray(historyData[currentDate])) {
+        historyData[currentDate] = { foods: historyData[currentDate], water: 0 };
+    }
+}
+
+function deleteFood(idx) {
+    if(confirm("¿Eliminar registro?")) {
+        historyData[currentDate].foods.splice(idx, 1);
+        save(); render(); playSound('delete');
+    }
+}
+
+function save() {
+    localStorage.setItem("benoHistory", JSON.stringify(historyData));
+    localStorage.setItem("benoProfile", JSON.stringify(profile));
+}
+
+function changeDate() {
+    currentDate = document.getElementById("datePicker").value;
+    render();
+}
+
+function repeatDay() {
+    let d = new Date(currentDate); d.setDate(d.getDate() - 1);
+    let prev = d.toISOString().slice(0,10);
+    if(historyData[prev]) {
+        historyData[currentDate] = JSON.parse(JSON.stringify(historyData[prev]));
+        save(); render(); playSound('success');
+    }
+}
+
+// --- RENDER ---
+let charts = {};
+
+function render() {
+    initDayIfMissing();
+    const day = historyData[currentDate];
+    const tbody = document.querySelector("#foodTable tbody");
+    tbody.innerHTML = "";
+    
+    let totals = {cal:0, pro:0, car:0, fat:0};
+    day.foods.forEach((f, i) => {
+        totals.cal += f.cal; totals.pro += f.pro; totals.car += f.car; totals.fat += f.fat;
+        tbody.innerHTML += `<tr><td>${f.name}</td><td>${f.type}</td><td>${f.cal}</td>
+            <td><button onclick="deleteFood(${i})" style="padding:4px 8px; background:#ef4444;">✕</button></td></tr>`;
+    });
+
+    // Dashboard
+    document.getElementById("dashKcal").innerText = Math.round(totals.cal);
+    document.getElementById("dashPro").innerText = Math.round(totals.pro) + "g";
+    document.getElementById("dashCar").innerText = Math.round(totals.car) + "g";
+    document.getElementById("dashFat").innerText = Math.round(totals.fat) + "g";
+
+    // Bars
+    renderProgress(totals);
+    
+    // Water
+    const waterCont = document.getElementById("waterContainer");
+    waterCont.innerHTML = "";
+    for(let i=1; i<=10; i++) {
+        const span = document.createElement("span");
+        span.className = `glass ${i <= day.water ? 'active' : ''}`;
+        span.innerHTML = "🥛";
+        span.onclick = () => setWater(i);
+        waterCont.appendChild(span);
+    }
+    document.getElementById("waterCount").innerText = (day.water * 0.25).toFixed(1) + " L / 2.5 L";
+
+    updateCharts(totals);
+}
+
+function renderProgress(t) {
+    const config = [
+        {key: 'Kcal', val: t.cal, max: profile.calories, color: '#10b981'},
+        {key: 'Proteína', val: t.pro, max: profile.protein, color: '#3b82f6'},
+        {key: 'Carbs', val: t.car, max: profile.carbs, color: '#f59e0b'},
+        {key: 'Grasas', val: t.fat, max: profile.fat, color: '#ef4444'}
+    ];
+    
+    document.getElementById("progressBars").innerHTML = config.map(c => {
+        const pct = Math.round((c.val / c.max) * 100);
+        return `
+            <div class="progress-bar-container">
+                <div class="progress-label"><span>${c.key}</span><span>${pct}%</span></div>
+                <div class="progress-bg">
+                    <div class="bar ${pct>100?'over-limit':''}" style="width:${Math.min(pct,100)}%; background:${c.color}"></div>
+                </div>
+            </div>`;
+    }).join('');
+}
+
+function updateCharts(totals) {
+    // Macro Pie
+    const ctxM = document.getElementById('macroChart');
+    if(charts.macro) charts.macro.destroy();
+    charts.macro = new Chart(ctxM, {
+        type: 'doughnut',
+        data: {
+            labels: ['Proteína', 'Carbs', 'Grasas'],
+            datasets: [{
+                data: [totals.pro * 4, totals.car * 4, totals.fat * 9],
+                backgroundColor: ['#3b82f6', '#f59e0b', '#ef4444'],
+                borderWidth: 0
+            }]
+        },
+        options: { maintainAspectRatio: false, plugins: { title: { display: true, text: 'Distribución Calórica', color: '#fff' } } }
+    });
+
+    // Weekly Line
+    const labels = []; const data = [];
+    for(let i=6; i>=0; i--) {
+        let d = new Date(); d.setDate(d.getDate() - i);
+        let k = d.toISOString().slice(0,10);
+        labels.push(k.slice(8));
+        let sum = historyData[k]?.foods ? historyData[k].foods.reduce((a,b)=>a+b.cal,0) : 0;
+        data.push(sum);
+    }
+    const ctxW = document.getElementById('weeklyChart');
+    if(charts.weekly) charts.weekly.destroy();
+    charts.weekly = new Chart(ctxW, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{ label: 'Kcal', data, borderColor: '#10b981', tension: 0.3 }]
+        },
+        options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+    });
+}
+
+// --- UTILIDADES ---
+function calculateMacros() {
+    const w = parseFloat(document.getElementById("calcWeight").value);
+    const h = parseFloat(document.getElementById("calcHeight").value);
+    const a = parseFloat(document.getElementById("calcAge").value);
+    const g = parseFloat(document.getElementById("calcGender").value);
+    
+    if(!w || !h || !a) return alert("Completa los datos");
+    
+    // Mifflin-St Jeor
+    let tmb = (10 * w) + (6.25 * h) - (5 * a) + (g === 1.2 ? 5 : -161);
+    let m = Math.round(tmb * 1.4); // Actividad moderada
+    
+    document.getElementById("reqCal").value = m;
+    document.getElementById("reqPro").value = Math.round(w * 1.8);
+    document.getElementById("reqFat").value = Math.round(w * 0.8);
+    document.getElementById("reqCar").value = Math.round((m - (w*1.8*4) - (w*0.8*9)) / 4);
+}
+
+function saveProfile() {
+    profile = {
+        calories: parseInt(document.getElementById("reqCal").value),
+        protein: parseInt(document.getElementById("reqPro").value),
+        carbs: parseInt(document.getElementById("reqCar").value),
+        fat: parseInt(document.getElementById("reqFat").value)
+    };
+    save(); render(); playSound('success');
+    alert("Metas actualizadas");
+}
+
+function exportData() {
+    const data = JSON.stringify({history: historyData, profile: profile, db: foodDB});
+    const blob = new Blob([data], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `BenoApp_Backup_${currentDate}.json`;
+    a.click();
+}
+
+function importData(e) {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        const data = JSON.parse(ev.target.result);
+        if(data.history) historyData = data.history;
+        if(data.profile) profile = data.profile;
+        if(data.db) foodDB = data.db;
+        save(); location.reload();
+    };
+    reader.readAsText(file);
+}
+
+function addManualFood() {
+    const n = prompt("Nombre:"); if(!n) return;
+    const c = parseFloat(prompt("Kcal/100g:"));
+    const p = parseFloat(prompt("Prot/100g:"));
+    const ch = parseFloat(prompt("Carb/100g:"));
+    const f = parseFloat(prompt("Fat/100g:"));
+    foodDB.push({name:n, cal:c, pro:p, car:ch, fat:f});
+    localStorage.setItem("foodDB", JSON.stringify(foodDB));
+    alert("¡Alimento guardado en tu base de datos!");
+}
+</script>
+</body>
+</html>
