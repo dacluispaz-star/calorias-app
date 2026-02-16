@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Benoapp 💪</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--primary:#22c55e;--primary-dark:#16a34a;--bg:#0f172a;--card:#1f2937;--card2:#111827;--text:#f8fafc;--muted:#94a3b8;--border:#374151;--danger:#ef4444;--blue:#3b82f6;--yellow:#eab308;--purple:#a855f7;--orange:#f97316}
+*,*::before,*::after{box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:10px;min-height:100vh}
+.container{max-width:1060px;margin:auto;background:var(--card2);padding:22px;border-radius:16px;box-shadow:0 4px 32px rgba(0,0,0,.6)}
+.app-header{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px}
+.app-logo{font-size:2em}
+.app-title{font-size:1.7em;font-weight:800;color:var(--primary);letter-spacing:-.5px}
+.app-title span{color:var(--text);font-weight:400}
+.app-subtitle{font-size:.72em;color:var(--muted);text-align:center;margin-bottom:18px;letter-spacing:.5px}
+.tabs{display:flex;gap:5px;margin-bottom:18px;flex-wrap:wrap}
+.tab-btn{padding:7px 13px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;font-size:.8em;font-weight:600;transition:all .2s}
+.tab-btn.active{background:var(--primary);color:#000;border-color:var(--primary)}
+.tab-btn:hover:not(.active){border-color:var(--primary);color:var(--primary)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:16px}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:14px}
+.card{background:var(--card);padding:16px;border-radius:12px;border:1px solid var(--border)}
+.card-sm{background:var(--card);padding:12px;border-radius:10px;border:1px solid var(--border);text-align:center}
+input,select,textarea{padding:9px 11px;border-radius:8px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:.9em;width:100%;margin:4px 0;transition:border-color .2s;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary)}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+textarea{resize:vertical;min-height:70px}
+button{padding:9px 14px;border-radius:8px;border:none;background:var(--primary);color:#000;font-weight:700;cursor:pointer;transition:all .2s;font-size:.88em;font-family:inherit}
+button:hover{background:var(--primary-dark);transform:translateY(-1px)}
+button:active{transform:translateY(0)}
+.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#b91c1c}
+.btn-sm{padding:4px 10px;font-size:.78em}
+.btn-full{width:100%;margin-top:8px}
+.btn-secondary{background:var(--card);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--primary);color:var(--primary);background:var(--card)}
+.form-group{display:flex;flex-direction:column;gap:3px}
+.form-group label{font-size:.78em;color:var(--muted);font-weight:600}
+.row-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stats-row{display:flex;justify-content:space-around;text-align:center;margin:14px 0;flex-wrap:wrap;gap:8px}
+.stat-item{flex:1;min-width:70px}
+.stat-item .val{font-size:1.35em;font-weight:700;margin:4px 0}
+.stat-item .lbl{font-size:.72em;color:var(--muted)}
+.stat-item .remain{font-size:.7em;color:var(--muted);margin-top:2px}
+.progress-box{margin-top:10px}
+.progress-header{display:flex;justify-content:space-between;font-size:.78em;color:var(--muted);margin-bottom:4px}
+.prog-bar{background:var(--border);height:11px;border-radius:10px;overflow:hidden}
+.fill{height:100%;border-radius:10px;transition:width .5s ease}
+.fill.over{background:var(--danger)!important}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.85em}
+th{background:var(--card2);padding:9px 8px;color:var(--muted);font-size:.78em;text-align:center}
+td{padding:8px;text-align:center;border-bottom:1px solid var(--border)}
+tr:hover td{background:rgba(255,255,255,.02)}
+td:first-child{text-align:left;max-width:160px;word-break:break-word}
+.meal-badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:.7em;font-weight:700;margin-right:4px}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.72em;font-weight:700}
+.badge-green{background:rgba(34,197,94,.2);color:var(--primary)}
+.badge-red{background:rgba(239,68,68,.2);color:var(--danger)}
+.badge-blue{background:rgba(59,130,246,.2);color:var(--blue)}
+.badge-yellow{background:rgba(234,179,8,.2);color:var(--yellow)}
+.tag-desayuno{background:rgba(251,191,36,.15);color:#fbbf24}
+.tag-almuerzo{background:rgba(34,197,94,.15);color:#22c55e}
+.tag-merienda{background:rgba(168,85,247,.15);color:#a855f7}
+.tag-cena{background:rgba(59,130,246,.15);color:#60a5fa}
+.tag-snack{background:rgba(249,115,22,.15);color:#f97316}
+.water-cups{display:flex;gap:4px;flex-wrap:wrap}
+.cup{width:32px;height:32px;border-radius:6px;border:2px solid var(--blue);cursor:pointer;font-size:1em;display:flex;align-items:center;justify-content:center;background:transparent;padding:0;color:var(--blue);transition:all .15s}
+.cup.filled{background:var(--blue);color:#fff;border-color:var(--blue)}
+.meal-selector{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.meal-tag{padding:5px 10px;border-radius:20px;border:1px solid var(--border);background:var(--card2);color:var(--muted);cursor:pointer;font-size:.78em;font-weight:600;transition:all .15s}
+.meal-tag.selected{background:var(--primary);color:#000;border-color:var(--primary)}
+.quick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px;margin-top:8px}
+.quick-btn{background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:7px 8px;font-size:.76em;cursor:pointer;text-align:left;transition:all .15s}
+.quick-btn:hover{border-color:var(--primary);color:var(--primary);background:var(--card2);transform:none}
+.quick-btn strong{display:block;color:var(--primary)}
+.ring-wrap{display:flex;justify-content:center;align-items:center;margin:10px 0;position:relative}
+.ring-wrap canvas{max-width:160px}
+.ring-center{position:absolute;text-align:center;pointer-events:none}
+.ring-center .rc-val{font-size:1.3em;font-weight:700;color:var(--text)}
+.ring-center .rc-lbl{font-size:.7em;color:var(--muted)}
+.chart-wrap{position:relative;height:220px}
+.chart-wrap-lg{position:relative;height:280px}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--card);color:var(--text);padding:10px 20px;border-radius:10px;border:1px solid var(--border);font-size:.88em;font-weight:600;z-index:9999;transition:transform .3s ease;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#toast.success{border-color:var(--primary);color:var(--primary)}
+#toast.error{border-color:var(--danger);color:var(--danger)}
+.exercise-card{background:var(--card2);border-radius:10px;padding:12px;border:1px solid var(--border);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.ex-name{font-weight:700;font-size:.9em}
+.ex-detail{font-size:.75em;color:var(--muted);margin-top:2px}
+.ex-kcal{font-size:1.1em;font-weight:700;color:var(--orange)}
+.recipe-card{background:var(--card2);border-radius:10px;padding:14px;border:1px solid var(--border);margin-bottom:10px;cursor:pointer;transition:border-color .2s}
+.recipe-card:hover{border-color:var(--primary)}
+.recipe-title{font-weight:700;font-size:.95em;margin-bottom:4px}
+.recipe-meta{font-size:.75em;color:var(--muted)}
+.recipe-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.planner-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:10px}
+.planner-day{background:var(--card2);border-radius:8px;padding:8px;border:1px solid var(--border);min-height:80px}
+.planner-day.today{border-color:var(--primary)}
+.planner-day-name{font-size:.7em;color:var(--muted);font-weight:700;text-align:center;margin-bottom:4px}
+.planner-item{font-size:.66em;background:rgba(34,197,94,.15);color:var(--primary);border-radius:4px;padding:2px 5px;margin-bottom:2px;cursor:pointer}
+.planner-item.ex-item{background:rgba(249,115,22,.15);color:var(--orange)}
+.reminder-item{background:var(--card2);border-radius:8px;padding:10px 12px;border:1px solid var(--border);margin-bottom:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.reminder-time{font-size:1.1em;font-weight:700;color:var(--primary);min-width:50px}
+.reminder-text{flex:1;font-size:.85em}
+.reminder-done{opacity:.45;text-decoration:line-through}
+.streak-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.streak-dot{width:22px;height:22px;border-radius:5px;font-size:.68em;display:flex;align-items:center;justify-content:center;font-weight:700}
+.streak-dot.active{background:var(--primary);color:#000}
+.streak-dot.inactive{background:var(--border);color:var(--muted)}
+.macro-pill{flex:1;min-width:80px;padding:10px;border-radius:10px;text-align:center;border:1px solid var(--border)}
+.macro-pill .mp-val{font-size:1.1em;font-weight:700}
+.macro-pill .mp-lbl{font-size:.7em;color:var(--muted)}
+.macro-summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.imc-result{border-radius:10px;padding:12px;margin-top:10px;border:1px solid var(--border);text-align:center}
+.imc-val{font-size:2em;font-weight:700}
+.empty-state{text-align:center;color:var(--muted);padding:30px 10px;font-size:.9em}
+.es-icon{font-size:2.5em;margin-bottom:8px}
+select[size]{height:130px}
+@media(max-width:600px){.app-title{font-size:1.3em}.tab-btn{padding:6px 9px;font-size:.74em}.planner-day{padding:4px;min-height:60px}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="app-header"><div class="app-logo">💪</div><div class="app-title">Beno<span>app</span></div></div>
+  <div class="app-subtitle">Tu gestor inteligente de nutrición y fitness</div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('hoy')">🏠 Hoy</button>
+    <button class="tab-btn" onclick="switchTab('agregar')">➕ Agregar</button>
+    <button class="tab-btn" onclick="switchTab('ejercicio')">💪 Ejercicio</button>
+    <button class="tab-btn" onclick="switchTab('recetas')">🍳 Recetas</button>
+    <button class="tab-btn" onclick="switchTab('planner')">📅 Planner</button>
+    <button class="tab-btn" onclick="switchTab('stats')">📊 Stats</button>
+    <button class="tab-btn" onclick="switchTab('herramientas')">🔧 Herramientas</button>
+    <button class="tab-btn" onclick="switchTab('config')">⚙️ Config</button>
+  </div>
+
+  <!-- TAB HOY -->
+  <div id="tab-hoy" class="tab-panel active">
+    <div class="grid">
+      <div class="card">
+        <h3 style="margin-bottom:6px">🚀 Progreso — <span id="displayDate" style="color:var(--muted);font-weight:400;font-size:.88em"></span></h3>
+        <div class="ring-wrap">
+          <canvas id="ringChart" width="160" height="160"></canvas>
+          <div class="ring-center"><div class="rc-val" id="ringVal">0</div><div class="rc-lbl">kcal netas</div></div>
+        </div>
+        <div id="netCalBar" style="margin:-4px 0 8px;font-size:.78em;text-align:center;color:var(--muted)"></div>
+        <div class="stats-row">
+          <div class="stat-item"><div class="lbl">Proteínas</div><div class="val" id="curPro" style="color:var(--blue)">0g</div><div class="remain" id="remPro"></div></div>
+          <div class="stat-item"><div class="lbl">Carbos</div><div class="val" id="curCar" style="color:var(--yellow)">0g</div><div class="remain" id="remCar"></div></div>
+          <div class="stat-item"><div class="lbl">Grasas</div><div class="val" id="curFat" style="color:var(--danger)">0g</div><div class="remain" id="remFat"></div></div>
+          <div class="stat-item"><div class="lbl">Fibra</div><div class="val" id="curFib" style="color:var(--purple)">0g</div><div class="remain" id="remFib"></div></div>
+        </div>
+        <div id="barsContainer"></div>
+      </div>
+      <div class="card">
+        <h3>💧 Agua del día</h3>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px">
+          <span style="font-size:.8em;color:var(--muted)">Vasos 250ml:</span>
+          <div class="water-cups" id="waterCups"></div>
+        </div>
+        <p id="waterText" style="font-size:.78em;color:var(--muted);margin:6px 0 0"></p>
+        <hr style="border-color:var(--border);margin:12px 0">
+        <h3>🔥 Balance calórico</h3>
+        <div id="calSummary" style="font-size:.84em"></div>
+        <hr style="border-color:var(--border);margin:12px 0">
+        <h3>🔥 Racha</h3>
+        <div id="streakDisplay"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <h3 style="margin:0">💪 Ejercicio de hoy</h3>
+        <button class="btn-sm btn-secondary" onclick="switchTab('ejercicio')">+ Añadir ejercicio</button>
+      </div>
+      <div id="exerciseTodayList" style="margin-top:10px"></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <h3 style="margin:0">🍽️ Comidas de hoy</h3>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <input type="date" id="datePicker" onchange="changeDate()" style="width:auto;font-size:.8em;padding:6px 8px">
+          <button class="btn-sm btn-secondary" onclick="exportDayCSV()">📥 CSV</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="text-align:left">Alimento</th><th>Kcal</th><th>P(g)</th><th>C(g)</th><th>G(g)</th><th>F(g)</th><th>Comida</th><th></th></tr></thead>
+          <tbody id="foodTable"></tbody>
+        </table>
+      </div>
+      <div id="tableEmpty" class="empty-state" style="display:none"><div class="es-icon">🍽️</div><div>Sin alimentos registrados.<br>Ve a <strong>Agregar</strong>.</div></div>
+    </div>
+  </div>
+
+  <!-- TAB AGREGAR -->
+  <div id="tab-agregar" class="tab-panel">
+    <div class="grid">
+      <div class="card">
+        <h3>🔎 Buscador de Alimentos</h3>
+        <input id="searchFood" placeholder="Escribe para buscar..." oninput="searchDB()">
+        <select id="foodSelect" size="6" onchange="fillFromDB()"></select>
+        <div style="margin-top:10px">
+          <label style="font-size:.78em;color:var(--muted);font-weight:600">Comida del día</label>
+          <div class="meal-selector">
+            <span class="meal-tag selected" data-meal="Desayuno" onclick="selectMeal(this)">🌅 Desayuno</span>
+            <span class="meal-tag" data-meal="Almuerzo" onclick="selectMeal(this)">☀️ Almuerzo</span>
+            <span class="meal-tag" data-meal="Merienda" onclick="selectMeal(this)">🍎 Merienda</span>
+            <span class="meal-tag" data-meal="Cena" onclick="selectMeal(this)">🌙 Cena</span>
+            <span class="meal-tag" data-meal="Snack" onclick="selectMeal(this)">🧃 Snack</span>
+          </div>
+          <div class="row-inputs" style="margin-top:8px">
+            <div class="form-group"><label>Gramos</label><input type="number" id="grams" placeholder="100" oninput="previewFood()"></div>
+            <div class="form-group" style="justify-content:flex-end"><label style="visibility:hidden">x</label><button onclick="addFood()" style="width:100%">➕ Registrar</button></div>
+          </div>
+        </div>
+        <div id="foodPreview" style="display:none;margin-top:10px;padding:10px;background:var(--card2);border-radius:8px;border:1px solid var(--border)">
+          <div style="font-size:.75em;color:var(--muted);margin-bottom:4px">Vista previa</div>
+          <div id="previewContent" style="font-size:.84em"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>⚡ Acceso rápido</h3>
+        <div class="quick-grid" id="quickGrid"></div>
+        <hr style="border-color:var(--border);margin:14px 0">
+        <h3>➕ Alimento personalizado</h3>
+        <div class="row-inputs">
+          <div class="form-group"><label>Nombre</label><input id="custName" placeholder="Mi alimento"></div>
+          <div class="form-group"><label>Kcal/100g</label><input type="number" id="custCal" placeholder="200"></div>
+          <div class="form-group"><label>Proteínas</label><input type="number" id="custPro" placeholder="20"></div>
+          <div class="form-group"><label>Carbos</label><input type="number" id="custCar" placeholder="10"></div>
+          <div class="form-group"><label>Grasas</label><input type="number" id="custFat" placeholder="5"></div>
+          <div class="form-group"><label>Fibra</label><input type="number" id="custFib" placeholder="0"></div>
+        </div>
+        <button onclick="addCustomFood()" class="btn-full">💾 Guardar alimento</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB EJERCICIO -->
+  <div id="tab-ejercicio" class="tab-panel">
+    <div class="grid">
+      <div class="card">
+        <h3>🏋️ Registrar ejercicio</h3>
+        <div class="form-group" style="margin-bottom:8px">
+          <label>Tipo de ejercicio</label>
+          <select id="exType" onchange="calcExerciseKcal()">
+            <optgroup label="Cardio">
+              <option value="Correr" data-kcal="600">🏃 Correr (600 kcal/h)</option>
+              <option value="Caminar" data-kcal="280">🚶 Caminar (280 kcal/h)</option>
+              <option value="Bicicleta" data-kcal="500">🚴 Bicicleta (500 kcal/h)</option>
+              <option value="Natación" data-kcal="550">🏊 Natación (550 kcal/h)</option>
+              <option value="Saltar cuerda" data-kcal="700">⛹️ Saltar cuerda (700 kcal/h)</option>
+              <option value="HIIT" data-kcal="750">⚡ HIIT (750 kcal/h)</option>
+              <option value="Elíptica" data-kcal="450">🔄 Elíptica (450 kcal/h)</option>
+              <option value="Senderismo" data-kcal="400">🥾 Senderismo (400 kcal/h)</option>
+            </optgroup>
+            <optgroup label="Fuerza">
+              <option value="Pesas alta intensidad" data-kcal="400">🏋️ Pesas alta int. (400 kcal/h)</option>
+              <option value="Pesas media intensidad" data-kcal="280">🏋️ Pesas media int. (280 kcal/h)</option>
+              <option value="Calistenia" data-kcal="350">💪 Calistenia (350 kcal/h)</option>
+              <option value="CrossFit" data-kcal="650">🔥 CrossFit (650 kcal/h)</option>
+            </optgroup>
+            <optgroup label="Flexibilidad">
+              <option value="Yoga" data-kcal="200">🧘 Yoga (200 kcal/h)</option>
+              <option value="Pilates" data-kcal="240">🤸 Pilates (240 kcal/h)</option>
+            </optgroup>
+            <optgroup label="Deportes">
+              <option value="Fútbol" data-kcal="550">⚽ Fútbol (550 kcal/h)</option>
+              <option value="Baloncesto" data-kcal="580">🏀 Baloncesto (580 kcal/h)</option>
+              <option value="Tenis" data-kcal="500">🎾 Tenis (500 kcal/h)</option>
+              <option value="Baile" data-kcal="380">💃 Baile (380 kcal/h)</option>
+            </optgroup>
+            <option value="Personalizado" data-kcal="0">✏️ Personalizado</option>
+          </select>
+        </div>
+        <div class="row-inputs">
+          <div class="form-group"><label>Duración (min)</label><input type="number" id="exDuration" placeholder="30" oninput="calcExerciseKcal()"></div>
+          <div class="form-group"><label>Kcal quemadas</label><input type="number" id="exKcal" placeholder="Auto"></div>
+        </div>
+        <div class="form-group" style="margin-top:6px"><label>Notas</label><input id="exNotes" placeholder="Ej: 5km, buena sesión..."></div>
+        <button onclick="addExercise()" class="btn-full" style="background:var(--orange);color:#000;margin-top:10px">💪 Registrar ejercicio</button>
+      </div>
+      <div class="card">
+        <h3>📅 Ejercicio de hoy</h3>
+        <div id="exerciseList"></div>
+        <div id="exerciseEmpty" class="empty-state" style="display:none"><div class="es-icon">💪</div><div>Sin ejercicio hoy.</div></div>
+        <div id="exerciseTotals" style="margin-top:10px;padding:10px;background:var(--card2);border-radius:8px;font-size:.85em;display:none"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>📈 Historial ejercicio (7 días)</h3>
+      <div class="chart-wrap"><canvas id="exerciseChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- TAB RECETAS -->
+  <div id="tab-recetas" class="tab-panel">
+    <div class="grid">
+      <div class="card">
+        <h3>🍳 Crear nueva receta</h3>
+        <div class="form-group"><label>Nombre</label><input id="recName" placeholder="Ej: Bowl de pollo con arroz"></div>
+        <div class="form-group" style="margin:6px 0"><label>Categoría</label>
+          <select id="recCat"><option value="Desayuno">🌅 Desayuno</option><option value="Almuerzo">☀️ Almuerzo</option><option value="Cena">🌙 Cena</option><option value="Snack">🧃 Snack</option><option value="Postre">🍰 Postre</option></select>
+        </div>
+        <div class="form-group"><label>Preparación / notas</label><textarea id="recNotes" placeholder="Cómo prepararlo..."></textarea></div>
+        <div style="font-size:.8em;color:var(--muted);margin:8px 0 4px;font-weight:600">Añadir ingredientes:</div>
+        <input id="recSearch" placeholder="Buscar alimento..." oninput="searchRecipeDB()">
+        <select id="recFoodSelect" size="4" onchange="fillRecipeFood()" style="margin-top:4px"></select>
+        <div class="row-inputs" style="margin-top:6px">
+          <div class="form-group"><label>Gramos</label><input type="number" id="recGrams" placeholder="100"></div>
+          <div class="form-group" style="justify-content:flex-end"><label style="visibility:hidden">x</label><button onclick="addRecipeIngredient()" class="btn-secondary" style="width:100%">+ Añadir</button></div>
+        </div>
+        <div id="recIngredientList" style="margin-top:8px"></div>
+        <div id="recPreview" style="display:none;margin-top:8px;padding:8px;background:var(--card2);border-radius:8px;border:1px solid var(--border);font-size:.82em"></div>
+        <button onclick="saveRecipe()" class="btn-full">💾 Guardar receta</button>
+      </div>
+      <div class="card">
+        <h3>📖 Mis recetas</h3>
+        <input id="recipeSearch" placeholder="Buscar receta..." oninput="filterRecipes()">
+        <div id="recipeList" style="margin-top:8px"></div>
+      </div>
+    </div>
+    <div id="recipeDetail" class="card" style="display:none;margin-top:0">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <h3 id="recDetailTitle" style="margin:0"></h3>
+        <div style="display:flex;gap:6px">
+          <button class="btn-sm btn-secondary" onclick="addRecipeToDay()">➕ Añadir a hoy</button>
+          <button class="btn-sm btn-danger" onclick="deleteRecipe()">🗑️</button>
+          <button class="btn-sm btn-secondary" onclick="closeRecipeDetail()">✕</button>
+        </div>
+      </div>
+      <div id="recDetailContent" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- TAB PLANNER -->
+  <div id="tab-planner" class="tab-panel">
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        <h3 style="margin:0">📅 Planificador semanal</h3>
+        <div style="display:flex;gap:6px">
+          <button class="btn-sm btn-secondary" onclick="plannerPrevWeek()">← Ant.</button>
+          <button class="btn-sm" onclick="plannerCurrentWeek()">Hoy</button>
+          <button class="btn-sm btn-secondary" onclick="plannerNextWeek()">Sig. →</button>
+        </div>
+      </div>
+      <div id="plannerWeekLabel" style="font-size:.8em;color:var(--muted);text-align:center;margin-bottom:8px"></div>
+      <div class="planner-grid" id="plannerGrid"></div>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <h3>⏰ Añadir recordatorio</h3>
+        <div class="row-inputs">
+          <div class="form-group"><label>Hora</label><input type="time" id="remTime" value="08:00"></div>
+          <div class="form-group"><label>Tipo</label>
+            <select id="remType"><option value="💧">💧 Agua</option><option value="🍽️">🍽️ Comida</option><option value="💊">💊 Suplementos</option><option value="💪">💪 Ejercicio</option><option value="📊">📊 Registrar</option></select>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:6px"><label>Mensaje</label><input id="remText" placeholder="Ej: Proteína post-entreno"></div>
+        <button onclick="addReminder()" class="btn-full">+ Añadir recordatorio</button>
+      </div>
+      <div class="card">
+        <h3>🔔 Mis recordatorios</h3>
+        <div id="reminderList"></div>
+        <div id="reminderEmpty" class="empty-state" style="display:none"><div class="es-icon">🔔</div><div>Sin recordatorios aún.</div></div>
+      </div>
+    </div>
+    <div class="card" id="planAddCard" style="display:none">
+      <h3 id="planAddTitle">Añadir al planner</h3>
+      <div class="row-inputs">
+        <div class="form-group"><label>Tipo</label><select id="planType"><option value="comida">🍽️ Comida / Receta</option><option value="ejercicio">💪 Ejercicio</option></select></div>
+        <div class="form-group"><label>Descripción</label><input id="planText" placeholder="Ej: Bowl de pollo"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button onclick="confirmPlanAdd()" style="flex:1">✅ Añadir</button>
+        <button onclick="closePlanAdd()" class="btn-secondary" style="flex:1">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB STATS -->
+  <div id="tab-stats" class="tab-panel">
+    <div class="grid-3" id="statsCards"></div>
+    <div class="grid">
+      <div class="card"><h3>📈 Calorías — 14 días</h3><div class="chart-wrap-lg"><canvas id="kcalChart14"></canvas></div></div>
+      <div class="card"><h3>🥗 Macros — 7 días</h3><div class="chart-wrap"><canvas id="macroChart7"></canvas></div></div>
+    </div>
+    <div class="grid">
+      <div class="card"><h3>💪 Ejercicio semanal</h3><div class="chart-wrap"><canvas id="exStatsChart"></canvas></div></div>
+      <div class="card"><h3>📊 Distribución macros (promedio)</h3><div class="chart-wrap"><canvas id="macroDonut"></canvas></div></div>
+    </div>
+    <div class="card"><h3>🏆 Logros</h3><div id="achievementsGrid" class="grid-3" style="margin:0"></div></div>
+  </div>
+
+  <!-- TAB HERRAMIENTAS -->
+  <div id="tab-herramientas" class="tab-panel">
+    <div class="grid">
+      <div class="card">
+        <h3>🧮 Calculadora IMC</h3>
+        <div class="row-inputs">
+          <div class="form-group"><label>Peso (kg)</label><input type="number" id="imcPeso" placeholder="70"></div>
+          <div class="form-group"><label>Altura (cm)</label><input type="number" id="imcAltura" placeholder="175"></div>
+        </div>
+        <button onclick="calcIMC()" class="btn-full">Calcular IMC</button>
+        <div id="imcResult"></div>
+      </div>
+      <div class="card">
+        <h3>🔥 Calculadora TMB / TDEE</h3>
+        <div class="row-inputs">
+          <div class="form-group"><label>Peso (kg)</label><input type="number" id="tmbPeso" placeholder="70"></div>
+          <div class="form-group"><label>Altura (cm)</label><input type="number" id="tmbAltura" placeholder="175"></div>
+          <div class="form-group"><label>Edad</label><input type="number" id="tmbEdad" placeholder="30"></div>
+          <div class="form-group"><label>Sexo</label><select id="tmbSexo"><option value="h">Hombre</option><option value="m">Mujer</option></select></div>
+        </div>
+        <div class="form-group" style="margin-top:4px"><label>Actividad</label>
+          <select id="tmbActividad"><option value="1.2">Sedentario</option><option value="1.375">Ligero</option><option value="1.55" selected>Moderado</option><option value="1.725">Activo</option><option value="1.9">Muy activo</option></select>
+        </div>
+        <button onclick="calcTMB()" class="btn-full">Calcular</button>
+        <div id="tmbResult"></div>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <h3>📊 Distribución de macros</h3>
+        <div class="row-inputs">
+          <div class="form-group"><label>Calorías</label><input type="number" id="macroKcal" placeholder="2000"></div>
+          <div class="form-group"><label>Objetivo</label><select id="macroObj"><option value="perder">Perder grasa</option><option value="mantener">Mantener</option><option value="ganar">Ganar músculo</option></select></div>
+        </div>
+        <button onclick="calcMacros()" class="btn-full">Calcular</button>
+        <div id="macroResult"></div>
+      </div>
+      <div class="card">
+        <h3>⚡ Estimador de calorías por ejercicio</h3>
+        <div class="form-group"><label>Actividad</label>
+          <select id="calcExType"><option value="600">🏃 Correr</option><option value="280">🚶 Caminar</option><option value="500">🚴 Bicicleta</option><option value="550">🏊 Natación</option><option value="750">⚡ HIIT</option><option value="400">🏋️ Pesas alta int.</option><option value="650">🔥 CrossFit</option><option value="200">🧘 Yoga</option><option value="380">💃 Baile</option></select>
+        </div>
+        <div class="row-inputs">
+          <div class="form-group"><label>Peso (kg)</label><input type="number" id="calcExPeso" placeholder="70"></div>
+          <div class="form-group"><label>Duración (min)</label><input type="number" id="calcExMin" placeholder="45"></div>
+        </div>
+        <button onclick="calcExerciseCalc()" class="btn-full">Estimar kcal</button>
+        <div id="exCalcResult"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB CONFIG -->
+  <div id="tab-config" class="tab-panel">
+    <div class="grid">
+      <div class="card">
+        <h3>⚙️ Objetivos diarios</h3>
+        <div class="row-inputs">
+          <div class="form-group"><label>Kcal Meta</label><input type="number" id="targetKcal" value="2000"></div>
+          <div class="form-group"><label>Proteínas (g)</label><input type="number" id="targetPro" value="150"></div>
+          <div class="form-group"><label>Carbos (g)</label><input type="number" id="targetCar" value="200"></div>
+          <div class="form-group"><label>Grasas (g)</label><input type="number" id="targetFat" value="70"></div>
+          <div class="form-group"><label>Fibra (g)</label><input type="number" id="targetFib" value="25"></div>
+          <div class="form-group"><label>Agua (vasos)</label><input type="number" id="targetWater" value="8"></div>
+        </div>
+        <button onclick="saveProfile()" class="btn-full">💾 Guardar Objetivos</button>
+      </div>
+      <div class="card">
+        <h3>🎨 Tema</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+          <button onclick="setTheme('green')" style="background:#22c55e;color:#000;flex:1">🟢 Verde</button>
+          <button onclick="setTheme('blue')" style="background:#3b82f6;color:#fff;flex:1">🔵 Azul</button>
+          <button onclick="setTheme('purple')" style="background:#a855f7;color:#fff;flex:1">🟣 Morado</button>
+          <button onclick="setTheme('orange')" style="background:#f97316;color:#000;flex:1">🟠 Naranja</button>
+        </div>
+        <h3>👤 Nombre</h3>
+        <input id="userName" placeholder="Tu nombre">
+        <button onclick="saveName()" class="btn-full btn-secondary" style="margin-top:6px">Guardar</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>⚠️ Datos</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="exportJSON()" class="btn-secondary" style="flex:1">📤 Exportar backup</button>
+        <button onclick="importJSON()" class="btn-secondary" style="flex:1">📥 Importar backup</button>
+        <button onclick="clearAllData()" class="btn-danger" style="flex:1">🧹 Borrar todo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<input type="file" id="importFile" accept=".json" style="display:none" onchange="readImportFile(event)">
+
+<script>
+const DB=[
+  {name:"Aceite de Oliva",cal:884,pro:0,car:0,fat:100,fib:0},{name:"Aceitunas",cal:115,pro:0.8,car:6,fat:10.7,fib:3.2},{name:"Acelgas",cal:19,pro:1.8,car:3.7,fat:0.2,fib:1.6},{name:"Aguacate",cal:160,pro:2,car:9,fat:15,fib:6.7},{name:"Ajo",cal:149,pro:6.4,car:33,fat:0.5,fib:2.1},{name:"Albaricoque",cal:48,pro:1.4,car:11,fat:0.4,fib:2},{name:"Alcachofas",cal:47,pro:3.3,car:10.5,fat:0.2,fib:5.4},{name:"Almejas",cal:74,pro:12.8,car:2.6,fat:1.2,fib:0},{name:"Almendras",cal:579,pro:21.2,car:21.7,fat:49.9,fib:12.5},{name:"Anacardos",cal:553,pro:18.2,car:30.2,fat:43.8,fib:3.3},{name:"Arándanos",cal:57,pro:0.7,car:14.5,fat:0.3,fib:2.4},{name:"Arroz Blanco",cal:130,pro:2.7,car:28.2,fat:0.3,fib:0.4},{name:"Arroz Integral",cal:111,pro:2.6,car:23,fat:0.9,fib:1.8},{name:"Atún natural",cal:116,pro:26,car:0,fat:1,fib:0},{name:"Atún aceite",cal:198,pro:24,car:0,fat:11,fib:0},{name:"Avellanas",cal:628,pro:15,car:16.7,fat:60.8,fib:9.7},{name:"Avena",cal:389,pro:16.9,car:66.3,fat:6.9,fib:10.6},{name:"Azúcar",cal:387,pro:0,car:100,fat:0,fib:0},{name:"Bacalao",cal:82,pro:17.8,car:0,fat:0.7,fib:0},{name:"Bacon",cal:541,pro:37,car:1.4,fat:42,fib:0},{name:"Batata",cal:86,pro:1.6,car:20.1,fat:0.1,fib:3},{name:"Berenjena",cal:25,pro:1,car:5.9,fat:0.2,fib:3},{name:"Brócoli",cal:34,pro:2.8,car:6.6,fat:0.4,fib:2.6},{name:"Cacahuetes",cal:567,pro:25.8,car:16.1,fat:49.2,fib:8.5},{name:"Calabacín",cal:17,pro:1.2,car:3.1,fat:0.3,fib:1},{name:"Calabaza",cal:26,pro:1,car:6.5,fat:0.1,fib:0.5},{name:"Cebolla",cal:40,pro:1.1,car:9.3,fat:0.1,fib:1.7},{name:"Cerdo chuleta",cal:242,pro:27,car:0,fat:14,fib:0},{name:"Cereza",cal:63,pro:1.1,car:16,fat:0.2,fib:2.1},{name:"Champiñones",cal:22,pro:3.1,car:3.3,fat:0.3,fib:1},{name:"Chocolate Negro 85%",cal:598,pro:8,car:20,fat:50,fib:10.9},{name:"Ciruela",cal:46,pro:0.7,car:11.4,fat:0.3,fib:1.4},{name:"Clara de Huevo",cal:52,pro:11,car:0.7,fat:0.2,fib:0},{name:"Coliflor",cal:25,pro:1.9,car:5,fat:0.3,fib:2},{name:"Cordero",cal:294,pro:25,car:0,fat:21,fib:0},{name:"Dátiles",cal:282,pro:2.5,car:75,fat:0.4,fib:8},{name:"Espinacas",cal:23,pro:2.9,car:3.6,fat:0.4,fib:2.2},{name:"Espárragos",cal:20,pro:2.2,car:3.9,fat:0.1,fib:2.1},{name:"Fresa",cal:32,pro:0.7,car:7.7,fat:0.3,fib:2},{name:"Garbanzos",cal:164,pro:8.9,car:27.4,fat:2.6,fib:7.6},{name:"Gambas",cal:99,pro:24,car:0,fat:0.3,fib:0},{name:"Guisantes",cal:81,pro:5.4,car:14.5,fat:0.4,fib:5.1},{name:"Huevo unidad",cal:70,pro:6.3,car:0.5,fat:4.8,fib:0},{name:"Hummus",cal:166,pro:8,car:14,fat:10,fib:6},{name:"Jamón Cocido",cal:105,pro:18,car:1,fat:3.2,fib:0},{name:"Jamón Serrano",cal:240,pro:30,car:0,fat:13,fib:0},{name:"Judías Blancas",cal:139,pro:9.7,car:25,fat:0.5,fib:7.4},{name:"Kiwi",cal:61,pro:1.1,car:15,fat:0.5,fib:3},{name:"Leche Entera",cal:61,pro:3.2,car:4.8,fat:3.3,fib:0},{name:"Lentejas",cal:116,pro:9,car:20,fat:0.4,fib:7.9},{name:"Lomo embuchado",cal:200,pro:32,car:1,fat:8,fib:0},{name:"Mango",cal:60,pro:0.8,car:15,fat:0.4,fib:1.6},{name:"Manzana",cal:52,pro:0.3,car:13.8,fat:0.2,fib:2.4},{name:"Mejillones",cal:86,pro:11.9,car:3.7,fat:2.2,fib:0},{name:"Merluza",cal:78,pro:17.5,car:0,fat:0.8,fib:0},{name:"Miel",cal:304,pro:0.3,car:82.4,fat:0,fib:0.2},{name:"Naranja",cal:47,pro:0.9,car:11.8,fat:0.1,fib:2.4},{name:"Nueces",cal:654,pro:15.2,car:13.7,fat:65.2,fib:6.7},{name:"Pan Blanco",cal:265,pro:9,car:49,fat:3.2,fib:2.7},{name:"Pan Integral",cal:247,pro:13,car:41,fat:4.2,fib:6.5},{name:"Papa cocida",cal:77,pro:2,car:17.5,fat:0.1,fib:1.8},{name:"Pasta trigo",cal:158,pro:5.8,car:30.7,fat:0.9,fib:1.8},{name:"Pavo pechuga",cal:135,pro:30,car:0,fat:1,fib:0},{name:"Pera",cal:57,pro:0.4,car:15.2,fat:0.1,fib:3.1},{name:"Pepino",cal:15,pro:0.7,car:3.6,fat:0.1,fib:0.5},{name:"Piña",cal:50,pro:0.5,car:13.1,fat:0.1,fib:1.4},{name:"Pistachos",cal:562,pro:20,car:27.5,fat:45.3,fib:10.3},{name:"Plátano",cal:89,pro:1.1,car:22.8,fat:0.3,fib:2.6},{name:"Pollo pechuga",cal:165,pro:31,car:0,fat:3.6,fib:0},{name:"Queso Burgos",cal:103,pro:12,car:3.5,fat:4.5,fib:0},{name:"Queso Manchego",cal:450,pro:26,car:0.5,fat:38,fib:0},{name:"Quinoa",cal:120,pro:4.4,car:21.3,fat:1.9,fib:2.8},{name:"Salmón",cal:208,pro:20.4,car:0,fat:13.4,fib:0},{name:"Sandía",cal:30,pro:0.6,car:7.5,fat:0.2,fib:0.4},{name:"Tofu",cal:76,pro:8,car:1.9,fat:4.8,fib:0.3},{name:"Tomate",cal:18,pro:0.9,car:3.9,fat:0.2,fib:1.2},{name:"Tortilla Patata",cal:150,pro:5,car:12,fat:9,fib:0.8},{name:"Yogur natural",cal:59,pro:3.5,car:4.7,fat:3.3,fib:0},{name:"Zanahoria",cal:41,pro:0.9,car:9.6,fat:0.2,fib:2.8},{name:"Leche desnatada",cal:34,pro:3.4,car:4.9,fat:0.1,fib:0},{name:"Queso cottage",cal:98,pro:11,car:3.4,fat:4.3,fib:0},{name:"Pechuga pavo lonchas",cal:109,pro:21,car:1.5,fat:2.1,fib:0},{name:"Edamame",cal:121,pro:11,car:8.9,fat:5.2,fib:5.2},{name:"Remolacha",cal:43,pro:1.6,car:9.6,fat:0.2,fib:2.8},{name:"Lechuga",cal:15,pro:1.4,car:2.9,fat:0.2,fib:1.3},{name:"Pimiento rojo",cal:31,pro:1,car:6,fat:0.3,fib:2.1},{name:"Pimiento verde",cal:20,pro:0.9,car:4.6,fat:0.2,fib:1.7},{name:"Maíz",cal:96,pro:3.4,car:21,fat:1.5,fib:2.4},{name:"Harina de avena",cal:379,pro:13.2,car:67.7,fat:7,fib:9.4},{name:"Proteína en polvo",cal:400,pro:80,car:8,fat:4,fib:0},{name:"Mantequilla de cacahuete",cal:588,pro:25,car:20,fat:50,fib:6},{name:"Requesón",cal:74,pro:11,car:3.4,fat:2,fib:0},{name:"Sardinas en aceite",cal:208,pro:24,car:0,fat:12,fib:0},{name:"Caballa",cal:205,pro:19,car:0,fat:14,fib:0},{name:"Cereales integrales",cal:357,pro:11,car:72,fat:3.5,fib:10},{name:"Mantequilla",cal:717,pro:0.9,car:0.1,fat:81,fib:0},{name:"Nata para cocinar",cal:292,pro:2,car:3,fat:30,fib:0}
+];
+
+let S={
+  profile:JSON.parse(localStorage.getItem("beno_profile"))||{kcal:2000,pro:150,car:200,fat:70,fib:25,water:8},
+  history:JSON.parse(localStorage.getItem("beno_history"))||{},
+  water:JSON.parse(localStorage.getItem("beno_water"))||{},
+  custom:JSON.parse(localStorage.getItem("beno_custom"))||[],
+  exercise:JSON.parse(localStorage.getItem("beno_exercise"))||{},
+  recipes:JSON.parse(localStorage.getItem("beno_recipes"))||[],
+  planner:JSON.parse(localStorage.getItem("beno_planner"))||{},
+  reminders:JSON.parse(localStorage.getItem("beno_reminders"))||[],
+  currentDate:new Date().toISOString().slice(0,10),
+  selectedFood:null,selectedMeal:"Desayuno",
+  recIngredients:[],recSelectedFood:null,selectedRecipe:null,
+  plannerWeekOffset:0,plannerTargetDay:null,
+  theme:localStorage.getItem("beno_theme")||"green",
+  userName:localStorage.getItem("beno_name")||""
+};
+let charts={};
+
+window.addEventListener('DOMContentLoaded',()=>{
+  applyTheme(S.theme);
+  document.getElementById("datePicker").value=S.currentDate;
+  loadProfile();searchDB();buildQuickGrid();renderWater();render();
+  renderExercise();renderReminderList();renderPlannerGrid();
+  searchRecipeDB();renderRecipeList();
+  if(S.userName)document.getElementById("userName").value=S.userName;
+});
+
+function switchTab(id){
+  const tabs=['hoy','agregar','ejercicio','recetas','planner','stats','herramientas','config'];
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',tabs[i]===id));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(id==='stats')renderStats();
+  if(id==='ejercicio')renderExerciseChart();
+  if(id==='planner')renderPlannerGrid();
+}
+
+function loadProfile(){
+  const p=S.profile;
+  document.getElementById("targetKcal").value=p.kcal;document.getElementById("targetPro").value=p.pro;document.getElementById("targetCar").value=p.car;document.getElementById("targetFat").value=p.fat;document.getElementById("targetFib").value=p.fib||25;document.getElementById("targetWater").value=p.water||8;
+}
+function saveProfile(){
+  S.profile={kcal:+document.getElementById("targetKcal").value||2000,pro:+document.getElementById("targetPro").value||150,car:+document.getElementById("targetCar").value||200,fat:+document.getElementById("targetFat").value||70,fib:+document.getElementById("targetFib").value||25,water:+document.getElementById("targetWater").value||8};
+  localStorage.setItem("beno_profile",JSON.stringify(S.profile));renderWater();render();toast("✅ Objetivos guardados","success");
+}
+function saveName(){S.userName=document.getElementById("userName").value.trim();localStorage.setItem("beno_name",S.userName);toast("✅ Guardado","success");}
+
+function allFoods(){return[...DB,...S.custom];}
+function norm(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");}
+function searchDB(){
+  const term=norm(document.getElementById("searchFood").value);const sel=document.getElementById("foodSelect");sel.innerHTML="";
+  allFoods().filter(f=>norm(f.name).includes(term)).sort((a,b)=>a.name.localeCompare(b.name)).forEach(f=>{const o=document.createElement("option");o.value=f.name;o.textContent=`${f.name} (${f.cal} kcal/100g)`;sel.appendChild(o);});
+}
+function fillFromDB(name){
+  const n=name||document.getElementById("foodSelect").value;S.selectedFood=allFoods().find(f=>f.name===n);
+  if(!document.getElementById("grams").value)document.getElementById("grams").value=100;previewFood();
+}
+function selectMeal(el){document.querySelectorAll('.meal-tag').forEach(t=>t.classList.remove('selected'));el.classList.add('selected');S.selectedMeal=el.dataset.meal;}
+function previewFood(){
+  const g=+document.getElementById("grams").value||0;
+  if(!S.selectedFood||!g){document.getElementById("foodPreview").style.display="none";return;}
+  const r=g/100,f=S.selectedFood;
+  document.getElementById("foodPreview").style.display="block";
+  document.getElementById("previewContent").innerHTML=`<strong>${f.name}</strong> · ${g}g<br><span style="color:var(--primary)">🔥${Math.round(f.cal*r)}kcal</span> <span style="color:var(--blue)">P:${(f.pro*r).toFixed(1)}g</span> <span style="color:var(--yellow)">C:${(f.car*r).toFixed(1)}g</span> <span style="color:var(--danger)">G:${(f.fat*r).toFixed(1)}g</span> <span style="color:var(--purple)">F:${((f.fib||0)*r).toFixed(1)}g</span>`;
+}
+function addFood(){
+  if(!S.selectedFood){toast("⚠️ Selecciona un alimento","error");return;}
+  const g=+document.getElementById("grams").value||0;if(g<=0){toast("⚠️ Introduce los gramos","error");return;}
+  const r=g/100,f=S.selectedFood;
+  const entry={id:Date.now(),name:f.name,grams:g,meal:S.selectedMeal,cal:Math.round(f.cal*r),pro:+(f.pro*r).toFixed(1),car:+(f.car*r).toFixed(1),fat:+(f.fat*r).toFixed(1),fib:+((f.fib||0)*r).toFixed(1)};
+  if(!S.history[S.currentDate])S.history[S.currentDate]=[];S.history[S.currentDate].push(entry);
+  saveAndRender();toast(`✅ ${f.name} añadido`,"success");trackQuick(f.name);document.getElementById("grams").value="";document.getElementById("foodPreview").style.display="none";
+}
+function deleteFood(id){S.history[S.currentDate]=(S.history[S.currentDate]||[]).filter(x=>x.id!==id);saveAndRender();toast("🗑️ Eliminado");}
+function addCustomFood(){
+  const name=document.getElementById("custName").value.trim();if(!name){toast("⚠️ Escribe un nombre","error");return;}
+  S.custom.push({name,custom:true,cal:+document.getElementById("custCal").value||0,pro:+document.getElementById("custPro").value||0,car:+document.getElementById("custCar").value||0,fat:+document.getElementById("custFat").value||0,fib:+document.getElementById("custFib").value||0});
+  localStorage.setItem("beno_custom",JSON.stringify(S.custom));searchDB();
+  ['custName','custCal','custPro','custCar','custFat','custFib'].forEach(id=>document.getElementById(id).value="");toast("✅ Guardado","success");
+}
+const QUICK_DEF=["Pollo pechuga","Avena","Huevo unidad","Arroz Blanco","Plátano","Yogur natural","Salmón","Pan Integral"];
+function trackQuick(name){let f=JSON.parse(localStorage.getItem("beno_freq")||"{}");f[name]=(f[name]||0)+1;localStorage.setItem("beno_freq",JSON.stringify(f));buildQuickGrid();}
+function buildQuickGrid(){
+  let freq=JSON.parse(localStorage.getItem("beno_freq")||"{}");
+  let names=Object.keys(freq).length>=4?Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,8).map(x=>x[0]):QUICK_DEF;
+  const grid=document.getElementById("quickGrid");grid.innerHTML="";
+  names.forEach(n=>{const f=allFoods().find(x=>x.name===n);if(!f)return;const btn=document.createElement("button");btn.className="quick-btn";btn.innerHTML=`<strong>${f.name}</strong>${f.cal} kcal/100g`;btn.onclick=()=>fillFromDB(f.name);grid.appendChild(btn);});
+}
+function renderWater(){
+  const target=S.profile.water||8,today=S.water[S.currentDate]||0;const cups=document.getElementById("waterCups");cups.innerHTML="";
+  for(let i=1;i<=target;i++){const btn=document.createElement("button");btn.className="cup"+(i<=today?" filled":"");btn.textContent="💧";btn.title=`${i*250}ml`;btn.onclick=()=>toggleWater(i);cups.appendChild(btn);}
+  document.getElementById("waterText").textContent=`${today}/${target} vasos · ${today*250}ml de ${target*250}ml`;
+}
+function toggleWater(n){const cur=S.water[S.currentDate]||0;S.water[S.currentDate]=cur>=n?n-1:n;localStorage.setItem("beno_water",JSON.stringify(S.water));renderWater();}
+
+function saveAndRender(){localStorage.setItem("beno_history",JSON.stringify(S.history));render();}
+function render(){
+  const dayData=S.history[S.currentDate]||[];const table=document.getElementById("foodTable");table.innerHTML="";
+  let t={k:0,p:0,c:0,f:0,fib:0};
+  dayData.forEach(x=>{
+    t.k+=x.cal;t.p+=x.pro;t.c+=x.car;t.f+=x.fat;t.fib+=(x.fib||0);
+    const mc="tag-"+(x.meal||"snack").toLowerCase();
+    table.innerHTML+=`<tr><td><span class="meal-badge ${mc}">${x.meal||''}</span>${x.name} <span style="color:var(--muted);font-size:.74em">(${x.grams||''}g)</span></td><td>${x.cal}</td><td style="color:var(--blue)">${x.pro}</td><td style="color:var(--yellow)">${x.car}</td><td style="color:var(--danger)">${x.fat}</td><td style="color:var(--purple)">${x.fib||0}</td><td style="color:var(--muted);font-size:.75em">${x.meal||'—'}</td><td><button class="btn-sm btn-danger" onclick="deleteFood(${x.id})">✕</button></td></tr>`;
+  });
+  document.getElementById("tableEmpty").style.display=dayData.length?"none":"block";
+  const exDay=S.exercise[S.currentDate]||[];const burned=exDay.reduce((a,x)=>a+x.kcal,0);
+  const p=S.profile;
+  document.getElementById("curPro").textContent=t.p.toFixed(1)+"g";document.getElementById("curCar").textContent=t.c.toFixed(1)+"g";document.getElementById("curFat").textContent=t.f.toFixed(1)+"g";document.getElementById("curFib").textContent=t.fib.toFixed(1)+"g";
+  document.getElementById("remPro").textContent=Math.max(0,p.pro-t.p).toFixed(1)+"g rest.";document.getElementById("remCar").textContent=Math.max(0,p.car-t.c).toFixed(1)+"g rest.";document.getElementById("remFat").textContent=Math.max(0,p.fat-t.f).toFixed(1)+"g rest.";document.getElementById("remFib").textContent=Math.max(0,(p.fib||25)-t.fib).toFixed(1)+"g rest.";
+  const net=t.k-burned;
+  document.getElementById("netCalBar").innerHTML=burned>0?`🔥<span style="color:var(--orange)">${burned} kcal quemadas</span> → Balance: <span style="color:var(--primary)">${net} kcal</span>`:'';
+  renderRingChart(Math.max(0,net||t.k),p.kcal);renderBars(t);renderCalSummary(t,burned);renderStreak();
+  document.getElementById("displayDate").textContent=fmtDate(S.currentDate);renderExerciseToday();
+}
+function renderRingChart(cur,tar){
+  const pct=Math.min(1,cur/tar),over=cur>tar;const ctx=document.getElementById("ringChart").getContext("2d");
+  if(charts.ring)charts.ring.destroy();
+  const primary=getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()||'#22c55e';
+  charts.ring=new Chart(ctx,{type:"doughnut",data:{datasets:[{data:[pct,1-pct],backgroundColor:[over?"#ef4444":primary,"#374151"],borderWidth:0,borderRadius:4}]},options:{cutout:"72%",plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{duration:600}}});
+  document.getElementById("ringVal").textContent=Math.round(cur);document.getElementById("ringVal").style.color=over?"#ef4444":"var(--text)";
+}
+function renderBars(t){
+  const p=S.profile;
+  const metrics=[{lab:"Calorías",cur:t.k,tar:p.kcal,col:"var(--primary)"},{lab:"Proteínas",cur:t.p,tar:p.pro,col:"var(--blue)"},{lab:"Carbohidratos",cur:t.c,tar:p.car,col:"var(--yellow)"},{lab:"Grasas",cur:t.f,tar:p.fat,col:"var(--danger)"},{lab:"Fibra",cur:t.fib,tar:p.fib||25,col:"var(--purple)"}];
+  document.getElementById("barsContainer").innerHTML=metrics.map(m=>{const pct=Math.min(110,(m.cur/m.tar)*100),over=m.cur>m.tar,disp=Number.isInteger(m.cur)?m.cur:m.cur.toFixed(1);return`<div class="progress-box"><div class="progress-header"><span>${m.lab} <span style="color:var(--text)">${disp}</span><span style="color:var(--muted)">/${m.tar}</span></span><span style="font-weight:700;color:${over?"var(--danger)":m.col}">${Math.round(pct)}%</span></div><div class="prog-bar"><div class="fill ${over?"over":""}" style="width:${Math.min(100,pct)}%;background:${over?"var(--danger)":m.col}"></div></div></div>`;}).join('');
+}
+function renderCalSummary(t,burned=0){
+  const p=S.profile,rem=p.kcal-t.k,pF=t.k>0?Math.round(t.f*9/t.k*100):0,pP=t.k>0?Math.round(t.p*4/t.k*100):0,pC=t.k>0?Math.round(t.c*4/t.k*100):0;
+  document.getElementById("calSummary").innerHTML=`<div style="margin-bottom:6px">${rem>0?`<span class="badge badge-green">✅ ${rem} kcal restantes</span>`:`<span class="badge badge-red">⚠️ ${Math.abs(rem)} kcal sobre meta</span>`}${burned>0?` <span class="badge badge-blue">💪 −${burned} ejercicio</span>`:''}</div><div style="font-size:.8em;color:var(--muted)">🔵P:${pP}% 🟡C:${pC}% 🔴G:${pF}%</div>`;
+}
+function renderStreak(){
+  const today=new Date();let s=0;
+  for(let i=0;i<30;i++){const d=new Date(today);d.setDate(d.getDate()-i);const key=d.toISOString().slice(0,10);if((S.history[key]||[]).length>0)s++;else break;}
+  const dots=[];for(let i=13;i>=0;i--){const d=new Date(today);d.setDate(d.getDate()-i);const key=d.toISOString().slice(0,10);dots.push({key,has:(S.history[key]||[]).length>0,lbl:key.slice(8,10)});}
+  document.getElementById("streakDisplay").innerHTML=`<div style="font-size:.8em;color:var(--muted);margin-bottom:6px">Racha: <strong style="color:var(--primary)">${s} día${s!==1?'s':''} 🔥</strong></div><div class="streak-row">${dots.map(d=>`<div class="streak-dot ${d.has?'active':'inactive'}" title="${d.key}">${d.lbl}</div>`).join('')}</div>`;
+}
+
+// EJERCICIO
+function calcExerciseKcal(){
+  const sel=document.getElementById("exType");const kcalH=+sel.options[sel.selectedIndex].dataset.kcal||0;const dur=+document.getElementById("exDuration").value||0;
+  if(kcalH&&dur)document.getElementById("exKcal").value=Math.round(kcalH*dur/60);
+}
+function addExercise(){
+  const name=document.getElementById("exType").value;const dur=+document.getElementById("exDuration").value||0;const kcal=+document.getElementById("exKcal").value||0;
+  if(!dur){toast("⚠️ Introduce la duración","error");return;}if(!kcal){toast("⚠️ Introduce las kcal","error");return;}
+  const entry={id:Date.now(),name,duration:dur,kcal,notes:document.getElementById("exNotes").value};
+  if(!S.exercise[S.currentDate])S.exercise[S.currentDate]=[];S.exercise[S.currentDate].push(entry);
+  localStorage.setItem("beno_exercise",JSON.stringify(S.exercise));
+  document.getElementById("exDuration").value="";document.getElementById("exKcal").value="";document.getElementById("exNotes").value="";
+  renderExercise();render();renderExerciseChart();toast(`✅ ${name} registrado`,"success");
+}
+function deleteExercise(id){S.exercise[S.currentDate]=(S.exercise[S.currentDate]||[]).filter(x=>x.id!==id);localStorage.setItem("beno_exercise",JSON.stringify(S.exercise));renderExercise();render();toast("🗑️ Eliminado");}
+function renderExercise(){
+  const list=document.getElementById("exerciseList"),empty=document.getElementById("exerciseEmpty"),totals=document.getElementById("exerciseTotals"),exDay=S.exercise[S.currentDate]||[];
+  if(!exDay.length){list.innerHTML="";empty.style.display="block";totals.style.display="none";return;}
+  empty.style.display="none";totals.style.display="block";
+  list.innerHTML=exDay.map(x=>`<div class="exercise-card"><div><div class="ex-name">${x.name}</div><div class="ex-detail">⏱️ ${x.duration} min${x.notes?` · ${x.notes}`:''}</div></div><div style="display:flex;align-items:center;gap:8px"><div class="ex-kcal">−${x.kcal} kcal</div><button class="btn-sm btn-danger" onclick="deleteExercise(${x.id})">✕</button></div></div>`).join('');
+  const total=exDay.reduce((a,x)=>({kcal:a.kcal+x.kcal,dur:a.dur+x.duration}),{kcal:0,dur:0});
+  totals.innerHTML=`⏱️ <strong>${total.dur} min</strong> &nbsp; 🔥 <strong style="color:var(--orange)">${total.kcal} kcal</strong> quemadas`;
+}
+function renderExerciseToday(){
+  const exDay=S.exercise[S.currentDate]||[];const el=document.getElementById("exerciseTodayList");
+  if(!exDay.length){el.innerHTML=`<div style="font-size:.8em;color:var(--muted)">Sin ejercicio hoy. <span style="cursor:pointer;color:var(--primary)" onclick="switchTab('ejercicio')">Añadir →</span></div>`;return;}
+  const total=exDay.reduce((a,x)=>a+x.kcal,0);
+  el.innerHTML=exDay.map(x=>`<div style="font-size:.82em;margin-bottom:4px"><span style="color:var(--orange)">💪 ${x.name}</span> · ${x.duration}min · <strong>−${x.kcal} kcal</strong></div>`).join('')+`<div style="font-size:.78em;color:var(--muted);margin-top:4px;padding-top:6px;border-top:1px solid var(--border)">Total: <strong style="color:var(--orange)">${total} kcal</strong> quemadas</div>`;
+}
+function renderExerciseChart(){
+  const labels=[],data=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const key=d.toISOString().slice(0,10);labels.push(key.slice(8,10)+"/"+key.slice(5,7));data.push((S.exercise[key]||[]).reduce((a,x)=>a+x.kcal,0));}
+  const ctx=document.getElementById("exerciseChart").getContext("2d");if(charts.exercise)charts.exercise.destroy();
+  charts.exercise=new Chart(ctx,{type:"bar",data:{labels,datasets:[{label:"Kcal quemadas",data,backgroundColor:"#f97316",borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,grid:{color:"#374151"},ticks:{color:"#94a3b8"}},x:{grid:{display:false},ticks:{color:"#94a3b8"}}},plugins:{legend:{labels:{color:"#94a3b8"}}}}});
+}
+
+// RECETAS
+function searchRecipeDB(){
+  const term=norm(document.getElementById("recSearch").value||"");const sel=document.getElementById("recFoodSelect");sel.innerHTML="";
+  allFoods().filter(f=>norm(f.name).includes(term)).sort((a,b)=>a.name.localeCompare(b.name)).forEach(f=>{const o=document.createElement("option");o.value=f.name;o.textContent=`${f.name} (${f.cal} kcal/100g)`;sel.appendChild(o);});
+}
+function fillRecipeFood(){S.recSelectedFood=allFoods().find(f=>f.name===document.getElementById("recFoodSelect").value);}
+function addRecipeIngredient(){
+  if(!S.recSelectedFood){toast("⚠️ Selecciona un alimento","error");return;}
+  const g=+document.getElementById("recGrams").value||0;if(!g){toast("⚠️ Introduce los gramos","error");return;}
+  const r=g/100,f=S.recSelectedFood;
+  S.recIngredients.push({name:f.name,grams:g,cal:Math.round(f.cal*r),pro:+(f.pro*r).toFixed(1),car:+(f.car*r).toFixed(1),fat:+(f.fat*r).toFixed(1),fib:+((f.fib||0)*r).toFixed(1)});
+  document.getElementById("recGrams").value="";renderRecipeIngredients();
+}
+function removeRecipeIngredient(i){S.recIngredients.splice(i,1);renderRecipeIngredients();}
+function renderRecipeIngredients(){
+  const list=document.getElementById("recIngredientList"),preview=document.getElementById("recPreview");
+  if(!S.recIngredients.length){list.innerHTML="";preview.style.display="none";return;}
+  list.innerHTML=S.recIngredients.map((i,idx)=>`<div style="display:flex;justify-content:space-between;align-items:center;font-size:.8em;padding:4px 0;border-bottom:1px solid var(--border)"><span>${i.name} (${i.grams}g)</span><span style="color:var(--muted)">${i.cal}kcal <button class="btn-sm btn-danger" onclick="removeRecipeIngredient(${idx})" style="padding:2px 6px">✕</button></span></div>`).join('');
+  const tot=S.recIngredients.reduce((a,x)=>({cal:a.cal+x.cal,pro:a.pro+x.pro,car:a.car+x.car,fat:a.fat+x.fat,fib:a.fib+x.fib}),{cal:0,pro:0,car:0,fat:0,fib:0});
+  preview.style.display="block";preview.innerHTML=`<strong>Total:</strong> 🔥${Math.round(tot.cal)}kcal P:${tot.pro.toFixed(1)}g C:${tot.car.toFixed(1)}g G:${tot.fat.toFixed(1)}g F:${tot.fib.toFixed(1)}g`;
+}
+function saveRecipe(){
+  const name=document.getElementById("recName").value.trim();if(!name){toast("⚠️ Escribe el nombre","error");return;}if(!S.recIngredients.length){toast("⚠️ Añade ingredientes","error");return;}
+  S.recipes.push({id:Date.now(),name,cat:document.getElementById("recCat").value,notes:document.getElementById("recNotes").value,ingredients:[...S.recIngredients]});
+  localStorage.setItem("beno_recipes",JSON.stringify(S.recipes));S.recIngredients=[];document.getElementById("recName").value="";document.getElementById("recNotes").value="";
+  renderRecipeIngredients();renderRecipeList();toast(`✅ Receta guardada`,"success");
+}
+function renderRecipeList(){
+  const search=norm(document.getElementById("recipeSearch")?document.getElementById("recipeSearch").value||"":"");
+  const list=document.getElementById("recipeList");const recipes=S.recipes.filter(r=>norm(r.name).includes(search));
+  if(!recipes.length){list.innerHTML='<div class="empty-state"><div class="es-icon">🍳</div><div>Sin recetas aún.</div></div>';return;}
+  list.innerHTML=recipes.map(r=>{const tot=r.ingredients.reduce((a,x)=>({cal:a.cal+x.cal,pro:a.pro+x.pro,car:a.car+x.car,fat:a.fat+x.fat}),{cal:0,pro:0,car:0,fat:0});return`<div class="recipe-card" onclick="showRecipeDetail(${r.id})"><div class="recipe-title">🍳 ${r.name}</div><div class="recipe-meta">🔥${Math.round(tot.cal)}kcal · P:${tot.pro.toFixed(1)}g · C:${tot.car.toFixed(1)}g · G:${tot.fat.toFixed(1)}g</div><div class="recipe-tags"><span class="badge badge-green">${r.cat}</span><span class="badge badge-blue">${r.ingredients.length} ing.</span></div></div>`;}).join('');
+}
+function filterRecipes(){renderRecipeList();}
+function showRecipeDetail(id){
+  S.selectedRecipe=S.recipes.find(r=>r.id===id);if(!S.selectedRecipe)return;const r=S.selectedRecipe;
+  const tot=r.ingredients.reduce((a,x)=>({cal:a.cal+x.cal,pro:a.pro+x.pro,car:a.car+x.car,fat:a.fat+x.fat,fib:a.fib+(x.fib||0)}),{cal:0,pro:0,car:0,fat:0,fib:0});
+  document.getElementById("recDetailTitle").textContent=`🍳 ${r.name}`;
+  document.getElementById("recDetailContent").innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><span class="badge badge-green">${r.cat}</span><span style="font-size:.82em;color:var(--muted)">🔥${Math.round(tot.cal)}kcal · P:${tot.pro.toFixed(1)}g · C:${tot.car.toFixed(1)}g · G:${tot.fat.toFixed(1)}g · F:${tot.fib.toFixed(1)}g</span></div>${r.notes?`<div style="font-size:.84em;color:var(--muted);margin-bottom:10px;padding:8px;background:var(--card2);border-radius:8px">${r.notes}</div>`:''}<div style="font-size:.82em;font-weight:600;color:var(--muted);margin-bottom:6px">INGREDIENTES:</div>${r.ingredients.map(i=>`<div style="display:flex;justify-content:space-between;font-size:.84em;padding:5px 0;border-bottom:1px solid var(--border)"><span>${i.name} (${i.grams}g)</span><span style="color:var(--muted)">${i.cal}kcal</span></div>`).join('')}`;
+  document.getElementById("recipeDetail").style.display="block";
+}
+function closeRecipeDetail(){document.getElementById("recipeDetail").style.display="none";S.selectedRecipe=null;}
+function addRecipeToDay(){
+  if(!S.selectedRecipe)return;const r=S.selectedRecipe;
+  if(!S.history[S.currentDate])S.history[S.currentDate]=[];
+  r.ingredients.forEach(i=>S.history[S.currentDate].push({id:Date.now()+Math.random(),name:`${i.name} (${r.name})`,grams:i.grams,meal:S.selectedMeal,cal:i.cal,pro:i.pro,car:i.car,fat:i.fat,fib:i.fib||0}));
+  saveAndRender();toast(`✅ ${r.name} añadida a hoy`,"success");switchTab('hoy');
+}
+function deleteRecipe(){
+  if(!S.selectedRecipe||!confirm(`¿Eliminar "${S.selectedRecipe.name}"?`))return;
+  S.recipes=S.recipes.filter(r=>r.id!==S.selectedRecipe.id);localStorage.setItem("beno_recipes",JSON.stringify(S.recipes));closeRecipeDetail();renderRecipeList();toast("🗑️ Receta eliminada");
+}
+
+// PLANNER
+function plannerCurrentWeek(){S.plannerWeekOffset=0;renderPlannerGrid();}
+function plannerPrevWeek(){S.plannerWeekOffset--;renderPlannerGrid();}
+function plannerNextWeek(){S.plannerWeekOffset++;renderPlannerGrid();}
+function plannerWeekDays(){const today=new Date(),day=today.getDay(),monday=new Date(today);monday.setDate(today.getDate()-((day+6)%7)+(S.plannerWeekOffset*7));const days=[];for(let i=0;i<7;i++){const d=new Date(monday);d.setDate(monday.getDate()+i);days.push(d.toISOString().slice(0,10));}return days;}
+function renderPlannerGrid(){
+  const days=plannerWeekDays(),today=new Date().toISOString().slice(0,10),names=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+  document.getElementById("plannerGrid").innerHTML=days.map((d,i)=>{
+    const items=S.planner[d]||[];
+    return`<div class="planner-day ${d===today?'today':''}"><div class="planner-day-name">${names[i]}<br><span style="font-size:.85em">${d.slice(8,10)}</span></div>${items.map((item,idx)=>`<div class="planner-item ${item.type==='ejercicio'?'ex-item':''}" onclick="removePlannerItem('${d}',${idx})" title="Clic para eliminar">${item.type==='ejercicio'?'💪':'🍽️'} ${item.text}</div>`).join('')}<div style="margin-top:4px"><button class="btn-sm btn-secondary" style="width:100%;font-size:.65em;padding:3px" onclick="openPlanAdd('${d}')">+</button></div></div>`;
+  }).join('');
+  document.getElementById("plannerWeekLabel").textContent=`${fmtDate(days[0])} — ${fmtDate(days[6])}`;
+}
+function openPlanAdd(day){S.plannerTargetDay=day;document.getElementById("planAddTitle").textContent=`Añadir — ${fmtDate(day)}`;document.getElementById("planAddCard").style.display="block";document.getElementById("planAddCard").scrollIntoView({behavior:"smooth"});}
+function closePlanAdd(){document.getElementById("planAddCard").style.display="none";S.plannerTargetDay=null;}
+function confirmPlanAdd(){
+  if(!S.plannerTargetDay)return;const text=document.getElementById("planText").value.trim();if(!text){toast("⚠️ Escribe descripción","error");return;}
+  if(!S.planner[S.plannerTargetDay])S.planner[S.plannerTargetDay]=[];
+  S.planner[S.plannerTargetDay].push({type:document.getElementById("planType").value,text});
+  localStorage.setItem("beno_planner",JSON.stringify(S.planner));document.getElementById("planText").value="";closePlanAdd();renderPlannerGrid();toast("✅ Añadido","success");
+}
+function removePlannerItem(day,idx){S.planner[day].splice(idx,1);localStorage.setItem("beno_planner",JSON.stringify(S.planner));renderPlannerGrid();}
+
+// REMINDERS
+function addReminder(){
+  const time=document.getElementById("remTime").value,type=document.getElementById("remType").value,text=document.getElementById("remText").value.trim();
+  if(!time||!text){toast("⚠️ Completa hora y mensaje","error");return;}
+  S.reminders.push({id:Date.now(),time,type,text,done:false});S.reminders.sort((a,b)=>a.time.localeCompare(b.time));
+  localStorage.setItem("beno_reminders",JSON.stringify(S.reminders));document.getElementById("remText").value="";renderReminderList();toast("✅ Recordatorio añadido","success");
+}
+function toggleReminder(id){const r=S.reminders.find(x=>x.id===id);if(r)r.done=!r.done;localStorage.setItem("beno_reminders",JSON.stringify(S.reminders));renderReminderList();}
+function deleteReminder(id){S.reminders=S.reminders.filter(x=>x.id!==id);localStorage.setItem("beno_reminders",JSON.stringify(S.reminders));renderReminderList();}
+function renderReminderList(){
+  const el=document.getElementById("reminderList"),empty=document.getElementById("reminderEmpty");
+  if(!S.reminders.length){el.innerHTML="";empty.style.display="block";return;}
+  empty.style.display="none";
+  el.innerHTML=S.reminders.map(r=>`<div class="reminder-item ${r.done?'reminder-done':''}"><div class="reminder-time">${r.type} ${r.time}</div><div class="reminder-text">${r.text}</div><div style="display:flex;gap:4px"><button class="btn-sm btn-secondary" onclick="toggleReminder(${r.id})">${r.done?'↩':'✓'}</button><button class="btn-sm btn-danger" onclick="deleteReminder(${r.id})">✕</button></div></div>`).join('');
+}
+
+// STATS
+function renderStats(){
+  let kArr=[],pArr=[],cArr=[],fArr=[],exArr=[];
+  for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const key=d.toISOString().slice(0,10);const day=S.history[key]||[];if(day.length){kArr.push(day.reduce((a,x)=>a+x.cal,0));pArr.push(day.reduce((a,x)=>a+x.pro,0));cArr.push(day.reduce((a,x)=>a+x.car,0));fArr.push(day.reduce((a,x)=>a+x.fat,0));}exArr.push((S.exercise[key]||[]).reduce((a,x)=>a+x.kcal,0));}
+  const avg=a=>a.length?Math.round(a.reduce((s,v)=>s+v,0)/a.length):0,totalEx=exArr.reduce((a,b)=>a+b,0);
+  document.getElementById("statsCards").innerHTML=[{icon:"🔥",label:"Kcal promedio (14d)",val:avg(kArr),unit:"kcal/día",col:"var(--primary)"},{icon:"🔵",label:"Proteína prom.",val:avg(pArr),unit:"g/día",col:"var(--blue)"},{icon:"🟡",label:"Carbos prom.",val:avg(cArr),unit:"g/día",col:"var(--yellow)"},{icon:"🔴",label:"Grasas prom.",val:avg(fArr),unit:"g/día",col:"var(--danger)"},{icon:"💪",label:"Kcal ejercicio (14d)",val:totalEx,unit:"kcal total",col:"var(--orange)"},{icon:"📅",label:"Días registrados",val:kArr.length,unit:"de 14",col:"var(--muted)"}].map(s=>`<div class="card-sm"><div style="font-size:1.5em">${s.icon}</div><div style="font-size:1.3em;font-weight:700;color:${s.col};margin:4px 0">${s.val}</div><div style="font-size:.72em;color:var(--muted)">${s.label}</div><div style="font-size:.7em;color:var(--muted)">${s.unit}</div></div>`).join('');
+
+  const primary=getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()||'#22c55e';
+  const labels14=[],kd14=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const key=d.toISOString().slice(0,10);labels14.push(key.slice(8,10)+"/"+key.slice(5,7));kd14.push((S.history[key]||[]).reduce((a,x)=>a+x.cal,0));}
+  const c1=document.getElementById("kcalChart14").getContext("2d");if(charts.kcal14)charts.kcal14.destroy();
+  charts.kcal14=new Chart(c1,{type:"line",data:{labels:labels14,datasets:[{label:"Kcal",data:kd14,borderColor:primary,backgroundColor:primary+"33",borderWidth:2,fill:true,tension:.3,pointRadius:3,pointBackgroundColor:primary},{label:"Meta",data:Array(14).fill(S.profile.kcal),borderColor:"rgba(255,255,255,.25)",borderDash:[4,4],pointRadius:0,borderWidth:1.5,fill:false}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,grid:{color:"#374151"},ticks:{color:"#94a3b8"}},x:{grid:{display:false},ticks:{color:"#94a3b8",maxRotation:0}}},plugins:{legend:{labels:{color:"#94a3b8",font:{size:11}}}}}});
+
+  const labels7=[],pd=[],cd=[],fd2=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const key=d.toISOString().slice(0,10);const day=S.history[key]||[];labels7.push(key.slice(8,10)+"/"+key.slice(5,7));pd.push(day.reduce((a,x)=>a+x.pro,0));cd.push(day.reduce((a,x)=>a+x.car,0));fd2.push(day.reduce((a,x)=>a+x.fat,0));}
+  const c2=document.getElementById("macroChart7").getContext("2d");if(charts.macro7)charts.macro7.destroy();
+  charts.macro7=new Chart(c2,{type:"bar",data:{labels:labels7,datasets:[{label:"Proteínas",data:pd,backgroundColor:"#3b82f6",stack:"m",borderRadius:3},{label:"Carbos",data:cd,backgroundColor:"#eab308",stack:"m",borderRadius:3},{label:"Grasas",data:fd2,backgroundColor:"#ef4444",stack:"m",borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{stacked:true,beginAtZero:true,grid:{color:"#374151"},ticks:{color:"#94a3b8"}},x:{stacked:true,grid:{display:false},ticks:{color:"#94a3b8"}}},plugins:{legend:{labels:{color:"#94a3b8",font:{size:11}}}}}});
+
+  const exL=[],exD=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const key=d.toISOString().slice(0,10);exL.push(key.slice(8,10)+"/"+key.slice(5,7));exD.push((S.exercise[key]||[]).reduce((a,x)=>a+x.kcal,0));}
+  const c3=document.getElementById("exStatsChart").getContext("2d");if(charts.exStats)charts.exStats.destroy();
+  charts.exStats=new Chart(c3,{type:"bar",data:{labels:exL,datasets:[{label:"Kcal quemadas",data:exD,backgroundColor:"#f97316",borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,grid:{color:"#374151"},ticks:{color:"#94a3b8"}},x:{grid:{display:false},ticks:{color:"#94a3b8"}}},plugins:{legend:{labels:{color:"#94a3b8"}}}}});
+
+  const ap=avg(pArr),ac=avg(cArr),af=avg(fArr);
+  const c4=document.getElementById("macroDonut").getContext("2d");if(charts.donut)charts.donut.destroy();
+  charts.donut=new Chart(c4,{type:"doughnut",data:{labels:["Proteínas","Carbos","Grasas"],datasets:[{data:[ap*4,ac*4,af*9],backgroundColor:["#3b82f6","#eab308","#ef4444"],borderWidth:0,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:"60%",plugins:{legend:{position:"right",labels:{color:"#94a3b8",font:{size:11},boxWidth:12}}}}});
+
+  let streak=0;for(let i=0;i<30;i++){const d=new Date();d.setDate(d.getDate()-i);const key=d.toISOString().slice(0,10);if((S.history[key]||[]).length>0)streak++;else break;}
+  const totalDays=Object.keys(S.history).filter(k=>S.history[k].length>0).length,totalExDays=Object.keys(S.exercise).filter(k=>S.exercise[k].length>0).length,totalRecipes=S.recipes.length;
+  document.getElementById("achievementsGrid").innerHTML=[
+    {icon:"🔥",name:"Racha activa",val:`${streak}d`,unlocked:streak>0,desc:"Días consecutivos"},
+    {icon:"📅",name:"Constancia",val:`${totalDays}d`,unlocked:totalDays>=7,desc:"7+ días registrados"},
+    {icon:"💪",name:"Atleta",val:`${totalExDays}s`,unlocked:totalExDays>=5,desc:"5+ sesiones ejercicio"},
+    {icon:"🍳",name:"Chef",val:`${totalRecipes}r`,unlocked:totalRecipes>=3,desc:"3+ recetas guardadas"},
+    {icon:"💧",name:"Hidratado",val:"",unlocked:(S.water[S.currentDate]||0)>=(S.profile.water||8),desc:"Meta de agua hoy"},
+    {icon:"🎯",name:"En meta",val:"",unlocked:(()=>{const d=S.history[S.currentDate]||[];const k=d.reduce((a,x)=>a+x.cal,0);return k>0&&k<=S.profile.kcal;})(),desc:"Dentro del objetivo kcal"},
+  ].map(a=>`<div class="card-sm" style="opacity:${a.unlocked?1:.4};border-color:${a.unlocked?"var(--primary)":"var(--border)"}"><div style="font-size:1.8em">${a.icon}</div><div style="font-weight:700;font-size:.85em;margin:4px 0">${a.name}${a.val?` · ${a.val}`:''}</div><div style="font-size:.7em;color:var(--muted)">${a.desc}</div>${a.unlocked?`<div style="font-size:.68em;color:var(--primary);margin-top:4px">✅ Desbloqueado</div>`:''}</div>`).join('');
+}
+
+// HERRAMIENTAS
+function calcIMC(){
+  const kg=+document.getElementById("imcPeso").value,cm=+document.getElementById("imcAltura").value;if(!kg||!cm){toast("⚠️ Introduce peso y altura","error");return;}
+  const imc=kg/((cm/100)**2);let cat,col;if(imc<18.5){cat="Bajo peso";col="var(--blue)";}else if(imc<25){cat="Peso normal ✅";col="var(--primary)";}else if(imc<30){cat="Sobrepeso";col="var(--yellow)";}else{cat="Obesidad";col="var(--danger)";}
+  document.getElementById("imcResult").innerHTML=`<div class="imc-result"><div class="imc-val" style="color:${col}">${imc.toFixed(1)}</div><div style="color:${col}">${cat}</div><div style="font-size:.72em;color:var(--muted);margin-top:6px">Saludable: 18.5–24.9</div></div>`;
+}
+function calcTMB(){
+  const kg=+document.getElementById("tmbPeso").value,cm=+document.getElementById("tmbAltura").value,age=+document.getElementById("tmbEdad").value,sex=document.getElementById("tmbSexo").value,act=+document.getElementById("tmbActividad").value;
+  if(!kg||!cm||!age){toast("⚠️ Completa los campos","error");return;}
+  const tmb=sex==="h"?88.362+(13.397*kg)+(4.799*cm)-(5.677*age):447.593+(9.247*kg)+(3.098*cm)-(4.330*age),tdee=Math.round(tmb*act);
+  document.getElementById("tmbResult").innerHTML=`<div class="imc-result" style="text-align:left;padding:14px"><div style="font-size:.8em;color:var(--muted)">TMB</div><div style="font-size:1.2em;font-weight:700;color:var(--primary)">${Math.round(tmb)} kcal/día</div><hr style="border-color:var(--border);margin:8px 0"><div style="font-size:.8em;color:var(--muted)">TDEE</div><div style="font-size:1.4em;font-weight:700">${tdee} kcal/día</div><div style="font-size:.72em;color:var(--muted);margin-top:6px">Déficit: ${tdee-500} · Mant.: ${tdee} · Superávit: ${tdee+300}</div><button onclick="applyTDEE(${tdee})" class="btn-full" style="font-size:.82em;margin-top:8px">✅ Usar como objetivo</button></div>`;
+}
+function applyTDEE(v){S.profile.kcal=v;localStorage.setItem("beno_profile",JSON.stringify(S.profile));document.getElementById("targetKcal").value=v;render();toast(`✅ Objetivo: ${v} kcal`,"success");}
+function calcMacros(){
+  const kcal=+document.getElementById("macroKcal").value,obj=document.getElementById("macroObj").value;if(!kcal){toast("⚠️ Introduce las calorías","error");return;}
+  const dists={perder:{pro:.35,car:.35,fat:.30},mantener:{pro:.25,car:.50,fat:.25},ganar:{pro:.30,car:.50,fat:.20}},d=dists[obj];
+  const pro=Math.round(kcal*d.pro/4),car=Math.round(kcal*d.car/4),fat=Math.round(kcal*d.fat/9);
+  document.getElementById("macroResult").innerHTML=`<div style="margin-top:10px;padding:12px;background:var(--card2);border-radius:10px;border:1px solid var(--border)"><div class="macro-summary"><div class="macro-pill" style="border-color:var(--blue)"><div class="mp-val" style="color:var(--blue)">${pro}g</div><div class="mp-lbl">Proteínas ${Math.round(d.pro*100)}%</div></div><div class="macro-pill" style="border-color:var(--yellow)"><div class="mp-val" style="color:var(--yellow)">${car}g</div><div class="mp-lbl">Carbos ${Math.round(d.car*100)}%</div></div><div class="macro-pill" style="border-color:var(--danger)"><div class="mp-val" style="color:var(--danger)">${fat}g</div><div class="mp-lbl">Grasas ${Math.round(d.fat*100)}%</div></div></div><button onclick="applyMacros(${kcal},${pro},${car},${fat})" class="btn-full" style="font-size:.82em">✅ Aplicar</button></div>`;
+}
+function applyMacros(k,p,c,f){S.profile={...S.profile,kcal:k,pro:p,car:c,fat:f};localStorage.setItem("beno_profile",JSON.stringify(S.profile));loadProfile();render();toast("✅ Macros aplicados","success");}
+function calcExerciseCalc(){
+  const kcalH=+document.getElementById("calcExType").value,peso=+document.getElementById("calcExPeso").value||70,min=+document.getElementById("calcExMin").value||0;
+  if(!min){toast("⚠️ Introduce los minutos","error");return;}
+  const kcal=Math.round(kcalH*(peso/70)*(min/60));
+  document.getElementById("exCalcResult").innerHTML=`<div class="imc-result" style="margin-top:8px"><div class="imc-val" style="color:var(--orange)">${kcal}</div><div>kcal en ${min}min (${peso}kg)</div></div>`;
+}
+
+// UTILS
+function changeDate(){S.currentDate=document.getElementById("datePicker").value;renderWater();render();renderExercise();}
+function fmtDate(d){const[y,m,day]=d.split("-"),months=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"],date=new Date(d+"T12:00:00"),days=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];return`${days[date.getDay()]} ${day} ${months[+m-1]} ${y}`;}
+function clearAllData(){if(confirm("¿Borrar todo? No se puede deshacer.")){["beno_history","beno_water","beno_custom","beno_freq","beno_exercise","beno_recipes","beno_planner","beno_reminders"].forEach(k=>localStorage.removeItem(k));location.reload();}}
+function exportDayCSV(){const day=S.history[S.currentDate]||[];if(!day.length){toast("⚠️ Sin datos","error");return;}let csv="Alimento,Gramos,Comida,Kcal,Proteínas,Carbos,Grasas,Fibra\n";day.forEach(x=>{csv+=`"${x.name}",${x.grams||''},${x.meal||''},${x.cal},${x.pro},${x.car},${x.fat},${x.fib||0}\n`;});dlFile(csv,`benoapp_${S.currentDate}.csv`,"text/csv");toast("📥 CSV exportado","success");}
+function exportJSON(){dlFile(JSON.stringify({profile:S.profile,history:S.history,water:S.water,custom:S.custom,exercise:S.exercise,recipes:S.recipes,planner:S.planner,reminders:S.reminders,exportDate:new Date().toISOString()},null,2),"benoapp_backup.json","application/json");toast("📤 Exportado","success");}
+function importJSON(){document.getElementById("importFile").click();}
+function readImportFile(e){
+  const file=e.target.files[0];if(!file)return;const reader=new FileReader();
+  reader.onload=ev=>{try{const d=JSON.parse(ev.target.result);['history','water','custom','exercise','recipes','planner','reminders'].forEach(k=>{if(d[k]){S[k]=d[k];localStorage.setItem("beno_"+k,JSON.stringify(d[k]));}});if(d.profile){S.profile=d.profile;localStorage.setItem("beno_profile",JSON.stringify(d.profile));}loadProfile();render();renderWater();renderExercise();renderRecipeList();renderReminderList();renderPlannerGrid();toast("✅ Importado","success");}catch{toast("❌ Error","error");}};
+  reader.readAsText(file);e.target.value="";
+}
+function dlFile(c,f,t){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([c],{type:t}));a.download=f;a.click();URL.revokeObjectURL(a.href);}
+function setTheme(t){S.theme=t;localStorage.setItem("beno_theme",t);applyTheme(t);}
+function applyTheme(t){const th={green:{p:"#22c55e",d:"#16a34a"},blue:{p:"#3b82f6",d:"#2563eb"},purple:{p:"#a855f7",d:"#9333ea"},orange:{p:"#f97316",d:"#ea580c"}};const c=th[t]||th.green;document.documentElement.style.setProperty('--primary',c.p);document.documentElement.style.setProperty('--primary-dark',c.d);}
+let toastTimer;
+function toast(msg,type=""){const el=document.getElementById("toast");el.textContent=msg;el.className="show "+type;clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.className="",2400);}
+</script>
+</body>
+</html>
