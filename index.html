@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Gestor PRO Calorías & Macros</title>
+<title>Benoapp Calorías & Macros</title>
 
 <!-- PWA -->
-<link rel="manifest" href="./manifest.json">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#22c55e">
 <link rel="apple-touch-icon" href="icon-192.png">
 
@@ -39,7 +39,7 @@ canvas{background:white;border-radius:10px;padding:8px}
 <body>
 
 <div class="container">
-<h1>📊 Gestor PRO Calorías & Macronutrientes</h1>
+<h1>📊 BenoApp Calorías & Macronutrientes</h1>
 
 <div class="install-box">
 <button id="installBtn" style="display:none">📲 Instalar App</button>
@@ -802,31 +802,29 @@ document.addEventListener("DOMContentLoaded",()=>{
 
 /* PWA INSTALL */
 let deferredPrompt;
+const installBtn=document.getElementById("installBtn");
 
 window.addEventListener("beforeinstallprompt",e=>{
  e.preventDefault();
  deferredPrompt=e;
- const btn=document.getElementById("installBtn");
- if(btn) btn.style.display="inline-block";
- console.log("PWA install disponible");
+ installBtn.style.display="inline-block";
 });
 
-document.getElementById("installBtn").addEventListener("click",async()=>{
- if(!deferredPrompt){
-  alert("Instalación no disponible aún. Abre la app varias veces o verifica HTTPS.");
-  return;
- }
+installBtn.addEventListener("click",async()=>{
+ if(!deferredPrompt)return;
  deferredPrompt.prompt();
  deferredPrompt=null;
- document.getElementById("installBtn").style.display="none";
+ installBtn.style.display="none";
 });
 
 /* SERVICE WORKER */
 function registerSW(){
  if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js");
+  navigator.serviceWorker.register("sw.js");
  }
 }
 </script>
 </body>
+</html>
+
 </html>
